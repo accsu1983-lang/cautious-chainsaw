@@ -75,10 +75,8 @@ export function VideoShowcase() {
                 setIsPlaying(false)
                 setShowControls(true)
               }}
-              onLoadedData={() => console.log('[v0] Video loaded successfully')}
-              onError={(e) => console.error('[v0] Video load error:', e)}
             >
-              <source src="/videos/team-cleaning-corporate.mp4" type="video/mp4" />
+              <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Team_Cleaning_Curtains_Corporate_Video-ICEOmKoD5ytSN7Ho0DNeDK6xLVRYpa.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
 
