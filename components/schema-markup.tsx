@@ -48,11 +48,11 @@ export function SchemaMarkup() {
       worstRating: '1'
     },
     sameAs: [
-      'https://fb.me/onthespot.za',
-      'https://instagr.am/onthespot.za',
-      'https://linkedin.com/company/onthespot-za',
-      'https://x.com/onthespot_za',
-      'https://youtu.be/@onthespot.za'
+      'https://facebook.com/onthespotcleaning.za',
+      'https://instagram.com/onthespotcleaning.za',
+      'https://linkedin.com/company/onthespot-cleaning',
+      'https://x.com/onthespotclean',
+      'https://youtube.com/@onthespotcleaning'
     ],
     areaServed: [
       { '@type': 'City', name: 'Sandton' },
@@ -228,11 +228,11 @@ export function SchemaMarkup() {
       addressCountry: 'ZA'
     },
     sameAs: [
-      'https://fb.me/onthespot.za',
-      'https://instagr.am/onthespot.za',
-      'https://linkedin.com/company/onthespot-za',
-      'https://x.com/onthespot_za',
-      'https://youtu.be/@onthespot.za'
+      'https://facebook.com/onthespotcleaning.za',
+      'https://instagram.com/onthespotcleaning.za',
+      'https://linkedin.com/company/onthespot-cleaning',
+      'https://x.com/onthespotclean',
+      'https://youtube.com/@onthespotcleaning'
     ],
     foundingDate: '2008',
     slogan: 'Professional On-Site Curtain Cleaning Johannesburg'

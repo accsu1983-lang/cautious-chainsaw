@@ -28,25 +28,25 @@ export function Footer() {
             <div className="space-y-3">
               <p className="text-xs font-semibold text-background uppercase tracking-wide">Follow Us</p>
               <div className="flex flex-wrap gap-2">
-                <a href="https://fb.me/onthespot.za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#1877F2] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="Facebook">
+                <a href="https://facebook.com/onthespotcleaning.za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#1877F2] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="Facebook">
                   <Facebook className="h-4 w-4" />
                 </a>
-                <a href="https://instagr.am/onthespot.za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-gradient-to-br hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#FCAF45] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="Instagram">
+                <a href="https://instagram.com/onthespotcleaning.za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-gradient-to-br hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#FCAF45] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="Instagram">
                   <Instagram className="h-4 w-4" />
                 </a>
-                <a href="https://tiktok.com/@onthespot.za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#000000] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="TikTok">
+                <a href="https://tiktok.com/@onthespotcleaning.za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#000000] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="TikTok">
                   <MessageCircle className="h-4 w-4" />
                 </a>
-                <a href="https://youtu.be/@onthespot.za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#FF0000] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="YouTube">
+                <a href="https://youtube.com/@onthespotcleaning" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#FF0000] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="YouTube">
                   <Youtube className="h-4 w-4" />
                 </a>
-                <a href="https://pin.it/onthespot" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#E60023] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="Pinterest">
+                <a href="https://pinterest.com/onthespotcleaning" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#E60023] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="Pinterest">
                   <Pinterest className="h-4 w-4" />
                 </a>
-                <a href="https://x.com/onthespot_za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#000000] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="X (Twitter)">
+                <a href="https://x.com/onthespotclean" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#000000] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="X (Twitter)">
                   <Twitter className="h-4 w-4" />
                 </a>
-                <a href="https://linkedin.com/company/onthespot-za" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#0A66C2] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="LinkedIn">
+                <a href="https://linkedin.com/company/onthespot-cleaning" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-background/10 hover:bg-[#0A66C2] rounded-lg flex items-center justify-center transition-all hover:scale-110" aria-label="LinkedIn">
                   <Linkedin className="h-4 w-4" />
                 </a>
               </div>
@@ -190,8 +190,8 @@ export function Footer() {
               &copy; {new Date().getFullYear()} On The Spot Curtain Cleaning. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link href="#about" className="hover:text-background transition-colors">Privacy</Link>
-              <Link href="#about" className="hover:text-background transition-colors">Terms</Link>
+              <Link href="#contact" className="hover:text-background transition-colors">Privacy</Link>
+              <Link href="#contact" className="hover:text-background transition-colors">Terms</Link>
               <Link href="/sitemap.xml" className="hover:text-background transition-colors">Sitemap</Link>
             </div>
           </div>

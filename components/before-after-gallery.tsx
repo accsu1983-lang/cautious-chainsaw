@@ -111,15 +111,13 @@ export function BeforeAfterGallery() {
                   className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
                   style={{ left: `${comparisonPosition}%` }}
                   onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      const rect = e.currentTarget.parentElement?.getBoundingClientRect()
+                      if (rect) {
+                        const x = moveEvent.clientX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                      }
                     }
 
                     const handleUp = () => {
@@ -129,27 +127,6 @@ export function BeforeAfterGallery() {
 
                     document.addEventListener('mousemove', handleMove)
                     document.addEventListener('mouseup', handleUp)
-                  }}
-                  onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
                   }}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
