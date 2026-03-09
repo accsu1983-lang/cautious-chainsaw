@@ -206,6 +206,23 @@ export default async function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Email Campaigns
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Send newsletter campaigns to your subscribers
+              </p>
+              <Button asChild className="w-full">
+                <Link href="/admin/campaigns">Create Campaign</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
                 Analytics
               </CardTitle>

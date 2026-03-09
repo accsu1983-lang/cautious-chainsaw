@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendWelcomeEmail, sendQuoteConfirmationEmail } from '@/lib/actions/emails'
 
 export async function submitContactForm(formData: {
   name: string
@@ -73,6 +74,15 @@ export async function submitContactForm(formData: {
 
     if (quoteError) throw quoteError
 
+    // Send quote confirmation email
+    await sendQuoteConfirmationEmail(
+      formData.email,
+      formData.name,
+      'QT-' + Date.now().toString().slice(-8),
+      'See email for details',
+      formData.service
+    )
+
     revalidatePath('/admin')
     return { success: true, message: 'Quote request submitted successfully!' }
   } catch (error) {
@@ -99,6 +109,9 @@ export async function subscribeToNewsletter(email: string) {
       }
       throw error
     }
+
+    // Send welcome email
+    await sendWelcomeEmail(email)
 
     revalidatePath('/admin/newsletter')
     return { success: true, message: 'Successfully subscribed to newsletter!' }
@@ -162,6 +175,15 @@ export async function submitQuoteCalculator(data: {
       })
 
     if (quoteError) throw quoteError
+
+    // Send quote confirmation email
+    await sendQuoteConfirmationEmail(
+      data.email,
+      data.name,
+      'QC-' + Date.now().toString().slice(-8),
+      data.estimatedPrice.toFixed(2),
+      data.serviceType
+    )
 
     revalidatePath('/admin')
     return { success: true, message: 'Quote saved! We will contact you shortly.' }
