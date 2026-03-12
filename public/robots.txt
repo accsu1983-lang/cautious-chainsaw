@@ -1,0 +1,29 @@
+# robots.txt for curtaincleaning.co.za
+
+# Default: Allow all bots
+User-agent: *
+Allow: /
+
+# Disallow private areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /_next/
+Disallow: /private/
+
+# Allow static assets
+Allow: /*.css
+Allow: /*.js
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.png
+Allow: /*.webp
+Allow: /*.svg
+Allow: /*.gif
+Allow: /*.mp4
+
+# Crawl delay (polite to servers)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://curtaincleaning.co.za/sitemap.xml
