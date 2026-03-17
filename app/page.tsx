@@ -1,10 +1,8 @@
+import dynamic from 'next/dynamic'
 import { Header } from '@/components/header'
 import { Hero } from '@/components/hero'
 import { Services } from '@/components/services'
-import { VideoShowcase } from '@/components/video-showcase'
-import { BeforeAfterGallery } from '@/components/before-after-gallery'
 import { Process } from '@/components/process'
-import { QuoteCalculator } from '@/components/quote-calculator'
 import { Areas } from '@/components/areas'
 import { About } from '@/components/about'
 import { Testimonials } from '@/components/testimonials'
@@ -14,10 +12,14 @@ import { FAQ } from '@/components/faq'
 import { Contact } from '@/components/contact'
 import { Footer } from '@/components/footer'
 import { CTABar } from '@/components/cta-bar'
-import { WhatsAppWidget } from '@/components/whatsapp-widget'
-import { ExitIntentPopup } from '@/components/exit-intent-popup'
-import { BackToTop } from '@/components/back-to-top'
 import { SchemaMarkup } from '@/components/schema-markup'
+
+const VideoShowcase = dynamic(() => import('@/components/video-showcase').then(mod => mod.VideoShowcase))
+const BeforeAfterGallery = dynamic(() => import('@/components/before-after-gallery').then(mod => mod.BeforeAfterGallery))
+const QuoteCalculator = dynamic(() => import('@/components/quote-calculator').then(mod => mod.QuoteCalculator))
+const WhatsAppWidget = dynamic(() => import('@/components/whatsapp-widget').then(mod => mod.WhatsAppWidget))
+const ExitIntentPopup = dynamic(() => import('@/components/exit-intent-popup').then(mod => mod.ExitIntentPopup))
+const BackToTop = dynamic(() => import('@/components/back-to-top').then(mod => mod.BackToTop))
 
 export default function Home() {
   return (
