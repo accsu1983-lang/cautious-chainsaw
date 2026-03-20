@@ -20,6 +20,7 @@ export function Header() {
               width={60}
               height={60}
               className="h-14 w-14"
+              priority
             />
             <div className="flex flex-col">
               <span className="text-lg font-bold text-foreground leading-tight">On The Spot</span>
