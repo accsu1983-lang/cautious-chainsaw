@@ -14,9 +14,7 @@ import { FAQ } from '@/components/faq'
 import { Contact } from '@/components/contact'
 import { Footer } from '@/components/footer'
 import { CTABar } from '@/components/cta-bar'
-import { WhatsAppWidget } from '@/components/whatsapp-widget'
-import { ExitIntentPopup } from '@/components/exit-intent-popup'
-import { BackToTop } from '@/components/back-to-top'
+import { ClientWidgets } from '@/components/client-widgets'
 import { SchemaMarkup } from '@/components/schema-markup'
 
 export default function Home() {
@@ -41,9 +39,7 @@ export default function Home() {
       </main>
       <Footer />
       <CTABar />
-      <WhatsAppWidget />
-      <BackToTop />
-      <ExitIntentPopup />
+      <ClientWidgets />
     </>
   )
 }
