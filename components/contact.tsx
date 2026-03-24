@@ -117,8 +117,8 @@ export function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground mb-2">Email</h3>
-                    <a href="mailto:info@curtaincleaning.co.za" className="text-primary hover:text-primary/80 transition-colors text-sm break-all">
-                      info@curtaincleaning.co.za
+                    <a href="mailto:info@curtaincleaning.org" className="text-primary hover:text-primary/80 transition-colors text-sm break-all">
+                      info@curtaincleaning.org
                     </a>
                     <p className="text-xs text-muted-foreground mt-1">24/7 inbox</p>
                   </div>

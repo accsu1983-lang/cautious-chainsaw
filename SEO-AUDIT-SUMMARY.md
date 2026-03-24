@@ -122,12 +122,12 @@ All service images include keyword-rich alt text:
 ### 9. **Geo-Targeting Meta Tags** ✓
 
 Added critical location signals:
-```html
+\`\`\`html
 <meta name="geo.region" content="ZA-GT" />
 <meta name="geo.placename" content="Johannesburg" />
 <meta name="geo.position" content="-26.1076;28.0567" />
 <meta name="ICBM" content="-26.1076, 28.0567" />
-```
+\`\`\`
 
 ### 10. **Local SEO - Service Areas** ✓
 
@@ -176,11 +176,11 @@ Footer optimized with:
 - Readable text sizes
 
 ### Robots.txt ✓
-```
+\`\`\`
 User-agent: *
 Allow: /
 Sitemap: https://www.curtaincleaning.co.za/sitemap.xml
-```
+\`\`\`
 
 ### XML Sitemap ✓
 Auto-generated with Next.js sitemap.ts

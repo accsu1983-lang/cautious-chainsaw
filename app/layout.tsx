@@ -8,15 +8,15 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Curtain Cleaning Johannesburg | Professional On-Site Service | On The Spot',
-  description: 'Curtain cleaning Johannesburg - Professional on-site service. Expert curtain cleaning in Johannesburg, Sandton, Rosebank & all suburbs. No removal needed. 15+ years experience. Free quotes: 075 011 9200. Also: upholstery, mattress & carpet cleaning.',
-  keywords: 'curtain cleaning johannesburg, curtain cleaning in johannesburg, professional curtain cleaning johannesburg, on-site curtain cleaning, johannesburg curtain cleaning, curtain cleaners johannesburg, upholstery cleaning johannesburg, mattress cleaning johannesburg, carpet cleaning johannesburg, curtain cleaning sandton, curtain cleaning rosebank, curtain cleaning randburg',
-  authors: [{ name: 'On The Spot Curtain Cleaning' }],
+  title: 'Curtain Cleaning Johannesburg | On-Site Professional Service | On The Spot',
+  description: 'On The Spot - Professional on-site curtain cleaning Johannesburg. 15+ years experience with 100% No-Shrinkage Guarantee. Hardware inspection & repair included. Serving 50+ Johannesburg suburbs. Free quotes: 075 011 9200',
+  keywords: 'curtain cleaning johannesburg, on-site curtain cleaning, professional curtain cleaning, curtain cleaning specialists, upholstery cleaning johannesburg, mattress cleaning johannesburg, carpet cleaning johannesburg, curtain cleaning sandton, curtain cleaning rosebank, curtain cleaning randburg, fabric cleaning specialists',
+  authors: [{ name: 'On The Spot Curtain Cleaning and Service', url: 'https://curtaincleaning.org' }],
   openGraph: {
-    title: 'Curtain Cleaning Johannesburg | On The Spot',
-    description: 'Professional on-site curtain cleaning services in Johannesburg. No shrinkage, no damage guarantee.',
-    url: 'https://curtaincleaning.co.za',
-    siteName: 'On The Spot',
+    title: 'On The Spot - Professional Curtain Cleaning Johannesburg',
+    description: 'On-site curtain cleaning with 100% No-Shrinkage Guarantee. 15+ years serving Johannesburg suburbs. Free quotes available.',
+    url: 'https://curtaincleaning.org',
+    siteName: 'On The Spot Curtain Cleaning and Service',
     locale: 'en_ZA',
     type: 'website',
   },
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     google: 'your-google-verification-code',
   },
   alternates: {
-    canonical: 'https://curtaincleaning.co.za',
+    canonical: 'https://curtaincleaning.org',
   },
   other: {
     'geo.region': 'ZA-GT',

@@ -16,14 +16,14 @@ export function Header() {
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/images/highly-20polished-203d-20v.png"
-              alt="On The Spot Curtain Cleaning Johannesburg"
+              alt="On The Spot Curtain Cleaning and Service"
               width={60}
               height={60}
               className="h-14 w-14"
             />
             <div className="flex flex-col">
               <span className="text-lg font-bold text-foreground leading-tight">On The Spot</span>
-              <span className="text-xs text-muted-foreground">Curtain Cleaning Specialists</span>
+              <span className="text-xs text-muted-foreground">Professional Cleaning Specialists</span>
             </div>
           </Link>
 

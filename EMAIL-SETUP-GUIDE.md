@@ -59,10 +59,10 @@ This guide explains how to set up and use the SendGrid email system for your cur
 ### Step 2: Set Environment Variables
 Add these to your Vercel project environment variables:
 
-```
+\`\`\`
 SENDGRID_API_KEY=your_api_key_here
 SENDGRID_FROM_EMAIL=noreply@curtaincleaning.co.za
-```
+\`\`\`
 
 ### Step 3: Verify Sender Email
 1. In SendGrid, go to Settings > Sender Authentication
@@ -72,12 +72,12 @@ SENDGRID_FROM_EMAIL=noreply@curtaincleaning.co.za
 ## Using the Email System
 
 ### Viewing Subscriber Stats
-```
+\`\`\`
 Navigate to: Admin Dashboard > Email Campaigns
 - See active subscriber count
 - See total subscriber count
 - Send campaigns to all subscribers
-```
+\`\`\`
 
 ### Sending a Newsletter Campaign
 1. Go to Admin Dashboard > Email Campaigns
@@ -96,22 +96,22 @@ All emails include:
 ## API Endpoints
 
 ### Newsletter Statistics
-```
+\`\`\`
 GET /api/admin/newsletter-stats
 Returns: { activeSubscribers, totalSubscribers }
-```
+\`\`\`
 
 ## Email Functions
 
 ### Available Functions in `/lib/actions/emails.ts`
 
 #### sendWelcomeEmail(email: string)
-```typescript
+\`\`\`typescript
 const result = await sendWelcomeEmail('customer@email.com')
-```
+\`\`\`
 
 #### sendQuoteConfirmationEmail(email, name, quoteId, price, service)
-```typescript
+\`\`\`typescript
 const result = await sendQuoteConfirmationEmail(
   'customer@email.com',
   'John Doe',
@@ -119,10 +119,10 @@ const result = await sendQuoteConfirmationEmail(
   '150.00',
   'Curtain Cleaning'
 )
-```
+\`\`\`
 
 #### sendBookingConfirmationEmail(email, name, bookingId, service, date, time, address)
-```typescript
+\`\`\`typescript
 const result = await sendBookingConfirmationEmail(
   'customer@email.com',
   'John Doe',
@@ -132,10 +132,10 @@ const result = await sendBookingConfirmationEmail(
   '10:00 AM',
   '123 Main Street'
 )
-```
+\`\`\`
 
 #### sendBookingReminderEmail(email, name, service, date, time)
-```typescript
+\`\`\`typescript
 const result = await sendBookingReminderEmail(
   'customer@email.com',
   'John Doe',
@@ -143,16 +143,16 @@ const result = await sendBookingReminderEmail(
   '2024-03-15',
   '10:00 AM'
 )
-```
+\`\`\`
 
 #### sendNewsletterCampaign(subject: string, content: string)
-```typescript
+\`\`\`typescript
 const result = await sendNewsletterCampaign(
   'Spring Cleaning Special',
   '<h3>Save 15% on all services!</h3><p>Book this week...</p>'
 )
 // Returns: { success: true, count: 125 }
-```
+\`\`\`
 
 ## Email Content Guidelines
 
@@ -164,7 +164,7 @@ const result = await sendNewsletterCampaign(
 5. **Links**: Always include company contact info
 
 ### HTML Template Structure
-```html
+\`\`\`html
 <h3>Main Heading</h3>
 <p>Paragraph text with content</p>
 <a href="https://curtaincleaning.co.za">Link Text</a>
@@ -173,7 +173,7 @@ const result = await sendNewsletterCampaign(
   <li>List item 1</li>
   <li>List item 2</li>
 </ul>
-```
+\`\`\`
 
 ## Troubleshooting
 

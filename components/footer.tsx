@@ -19,11 +19,11 @@ export function Footer() {
               />
               <div className="flex flex-col">
                 <span className="text-base font-bold leading-tight">On The Spot</span>
-                <span className="text-xs text-background/70">Curtain Cleaning</span>
+                <span className="text-xs text-background/70">Professional Cleaning</span>
               </div>
             </Link>
             <p className="text-sm text-background/80 leading-relaxed">
-              Johannesburg&apos;s trusted curtain cleaning specialists. Over 15 years of professional on-site cleaning services.
+              Johannesburg&apos;s trusted cleaning specialists since 2008. On-site dry cleaning with 100% No-Shrinkage Guarantee. Hardware inspection & repair included in every job.
             </p>
             <div className="space-y-3">
               <p className="text-xs font-semibold text-background uppercase tracking-wide">Follow Us</p>
@@ -153,7 +153,7 @@ export function Footer() {
                   </div>
                   <div>
                     <p className="text-background/70 text-xs mb-1">Email</p>
-                    <a href="mailto:info@curtaincleaning.co.za" className="text-background font-semibold hover:text-accent transition-colors break-all">info@curtaincleaning.co.za</a>
+                    <a href="mailto:info@curtaincleaning.org" className="text-background font-semibold hover:text-accent transition-colors break-all">info@curtaincleaning.org</a>
                   </div>
                 </div>
               </li>
@@ -187,16 +187,16 @@ export function Footer() {
         <div className="border-t border-background/20 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-background/70">
             <p>
-              &copy; {new Date().getFullYear()} On The Spot Curtain Cleaning. All rights reserved.
+              &copy; {new Date().getFullYear()} On The Spot Curtain Cleaning and Service. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link href="#about" className="hover:text-background transition-colors">Privacy</Link>
-              <Link href="#about" className="hover:text-background transition-colors">Terms</Link>
+              <Link href="#contact" className="hover:text-background transition-colors">Privacy</Link>
+              <Link href="#contact" className="hover:text-background transition-colors">Terms</Link>
               <Link href="/sitemap.xml" className="hover:text-background transition-colors">Sitemap</Link>
             </div>
           </div>
           <div className="mt-4 text-center text-xs text-background/60">
-            <p>Professional curtain cleaning Johannesburg | Upholstery cleaning | Mattress cleaning | Carpet cleaning</p>
+            <p>On-site curtain cleaning Johannesburg | Upholstery cleaning | Mattress cleaning | Carpet cleaning | 100% No-Shrinkage Guarantee</p>
           </div>
         </div>
       </div>

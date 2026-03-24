@@ -4,20 +4,26 @@ export function SchemaMarkup() {
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    '@id': 'https://curtaincleaning.co.za',
-    name: 'On The Spot Curtain Cleaning Johannesburg',
-    alternateName: 'On The Spot',
-    image: 'https://curtaincleaning.co.za/logo.png',
-    url: 'https://curtaincleaning.co.za',
-    description: 'Professional curtain cleaning Johannesburg. On-site curtain cleaning services for homes and businesses across all Johannesburg suburbs. No shrinkage guarantee.',
+    '@id': 'https://curtaincleaning.org',
+    name: 'On The Spot Curtain Cleaning and Service',
+    alternateName: 'On The Spot Curtain Cleaning Specialists',
+    image: 'https://curtaincleaning.org/logo.png',
+    url: 'https://curtaincleaning.org',
+    description: 'Professional on-site curtain cleaning Johannesburg. 15+ years experience with 100% No-Shrinkage Guarantee. On-site dry cleaning—curtains cleaned exactly where they hang. Hardware inspection & repair included.',
     telephone: '+27750119200',
-    email: 'info@curtaincleaning.co.za',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      telephone: '+27750119200',
+      contactType: 'Customer Service',
+      availableLanguage: 'English'
+    },
+    email: 'info@curtaincleaning.org',
     priceRange: '$$',
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Martha North Rd',
       addressLocality: 'Randburg',
-      addressRegion: 'Johannesburg',
+      addressRegion: 'Gauteng',
       postalCode: '2194',
       addressCountry: 'ZA'
     },
@@ -196,34 +202,38 @@ export function SchemaMarkup() {
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': 'https://curtaincleaning.co.za/#organization',
-    name: 'On The Spot Curtain Cleaning Johannesburg',
-    alternateName: 'On The Spot',
-    url: 'https://curtaincleaning.co.za',
+    '@id': 'https://curtaincleaning.org/#organization',
+    name: 'On The Spot Curtain Cleaning and Service',
+    alternateName: 'On The Spot Curtain Cleaning Specialists',
+    url: 'https://curtaincleaning.org',
     logo: {
       '@type': 'ImageObject',
-      '@id': 'https://curtaincleaning.co.za/#logo',
-      url: 'https://curtaincleaning.co.za/logo.png',
+      '@id': 'https://curtaincleaning.org/#logo',
+      url: 'https://curtaincleaning.org/logo.png',
       width: '600',
       height: '600',
-      caption: 'On The Spot Curtain Cleaning Johannesburg Logo'
+      caption: 'On The Spot Curtain Cleaning and Service Logo'
     },
     image: {
       '@type': 'ImageObject',
-      '@id': 'https://curtaincleaning.co.za/#logo',
-      url: 'https://curtaincleaning.co.za/logo.png',
+      '@id': 'https://curtaincleaning.org/#logo',
+      url: 'https://curtaincleaning.org/logo.png',
       width: '600',
       height: '600',
-      caption: 'On The Spot Curtain Cleaning Johannesburg'
+      caption: 'On The Spot Curtain Cleaning and Service'
     },
-    description: 'Professional curtain cleaning service in Johannesburg with over 15 years of experience. On-site cleaning for curtains, upholstery, mattresses, and carpets.',
+    description: 'Professional on-site curtain cleaning service in Johannesburg with 15+ years of experience. Specializing in curtains, upholstery, mattresses, and carpets. 100% No-Shrinkage Guarantee. Hardware inspection & repair included.',
     telephone: '+27750119200',
-    email: 'info@curtaincleaning.co.za',
+    email: 'info@curtaincleaning.org',
+    founder: {
+      '@type': 'Person',
+      name: 'Kathy Dunlop'
+    },
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Martha North Rd',
       addressLocality: 'Randburg',
-      addressRegion: 'Johannesburg',
+      addressRegion: 'Gauteng',
       postalCode: '2194',
       addressCountry: 'ZA'
     },
