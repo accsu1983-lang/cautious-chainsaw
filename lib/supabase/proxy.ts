@@ -31,15 +31,29 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
+  // PERFORMANCE OPTIMIZATION (Bolt): Skip getUser() for anonymous visitors on public routes
+  // to reduce TTFB by avoiding unnecessary external API calls.
+  const hasAuthCookies = request.cookies.getAll().some(
+    (cookie) => cookie.name.includes('sb-') || cookie.name.includes('auth')
+  )
+  const isProtectedRoute =
+    request.nextUrl.pathname.startsWith('/protected') ||
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/auth')
+
   // Do not run code between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  // IMPORTANT: If you remove getUser() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  if (hasAuthCookies || isProtectedRoute) {
+    // IMPORTANT: If you remove getUser() and you use server-side rendering
+    // with the Supabase client, your users may be randomly logged out.
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser()
+    user = authUser
+  }
 
   if (
     // if the user is not logged in and the app path, in this case, /protected, is accessed, redirect to the login page
