@@ -11,7 +11,7 @@ export function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-3">
               <Image
-                src="/images/highly-20polished-203d-20v.png"
+                src="/images/logo-optimized.webp"
                 alt="On The Spot"
                 width={50}
                 height={50}
