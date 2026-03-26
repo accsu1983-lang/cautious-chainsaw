@@ -15,7 +15,7 @@ export function Header() {
         <div className="flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/images/highly-20polished-203d-20v.png"
+              src="/images/logo-optimized.webp"
               alt="On The Spot Curtain Cleaning Johannesburg"
               width={60}
               height={60}
