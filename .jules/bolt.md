@@ -1,0 +1,3 @@
+## 2026-02-02 - [Middleware TTFB & Scroll Throttling]
+**Learning:** In Next.js 16 with Supabase SSR, every request through middleware that calls `supabase.auth.getUser()` adds significant latency to TTFB. For a public landing page where most users are anonymous, this is a major bottleneck. Throttling high-frequency events like 'scroll' using `requestAnimationFrame` is essential for maintaining a smooth 60fps UI, especially on mobile.
+**Action:** Always skip auth checks for anonymous visitors on public routes in middleware by checking for the absence of auth cookies. Use `requestAnimationFrame` with a `ticking` flag to throttle scroll and resize listeners.
