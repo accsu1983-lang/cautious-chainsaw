@@ -6,11 +6,33 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  // Check if critical Supabase environment variables are available.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return supabaseResponse
+  }
+
+  // Optimization: Skip session checks for non-protected paths if no auth cookies are present.
+  // This significantly reduces TTFB for anonymous visitors.
+  const authCookies = request.cookies.getAll().some((cookie) =>
+    cookie.name.includes('sb-') || cookie.name.includes('auth')
+  )
+  const isProtectedPath =
+    request.nextUrl.pathname.startsWith('/protected') ||
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/auth')
+
+  if (!authCookies && !isProtectedPath) {
+    return supabaseResponse
+  }
+
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
