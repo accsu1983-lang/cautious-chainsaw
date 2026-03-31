@@ -116,10 +116,19 @@ export function BeforeAfterGallery() {
                     
                     const rect = parentElement.getBoundingClientRect()
 
+                    let ticking = false
+
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      if (!ticking) {
+                        const clientX = moveEvent.clientX
+                        window.requestAnimationFrame(() => {
+                          const x = clientX - rect.left
+                          const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                          setComparisonPosition(percentage)
+                          ticking = false
+                        })
+                        ticking = true
+                      }
                     }
 
                     const handleUp = () => {
@@ -135,12 +144,19 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let ticking = false
 
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      if (!ticking) {
+                        const clientX = moveEvent.touches[0].clientX
+                        window.requestAnimationFrame(() => {
+                          const x = clientX - rect.left
+                          const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                          setComparisonPosition(percentage)
+                          ticking = false
+                        })
+                        ticking = true
+                      }
                     }
 
                     const handleUp = () => {
