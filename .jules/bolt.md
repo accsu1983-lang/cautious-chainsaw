@@ -1,0 +1,3 @@
+## 2025-05-14 - Throttling High-Frequency Event Listeners
+**Learning:** High-frequency events like `mousemove` and `touchmove` can trigger excessive React state updates, leading to main thread congestion and janky UI interactions, especially on low-end devices. Syncing these updates with the browser's paint cycle using `requestAnimationFrame` significantly improves smoothness.
+**Action:** Always throttle `mousemove`, `touchmove`, and `scroll` event listeners that trigger state updates using `requestAnimationFrame`. Ensure performance-critical event properties (e.g., `clientX`) are captured into local variables before the asynchronous callback to avoid issues with event object pooling.
