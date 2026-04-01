@@ -3,18 +3,21 @@
 import { useState, useEffect } from 'react'
 import { ArrowUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { throttle } from '@/lib/throttle'
 
 export function BackToTop() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    const toggleVisibility = () => {
+    // Throttled scroll listener to reduce main thread load during rapid scrolling.
+    // Throttling ensures the visibility check only runs once every 100ms.
+    const toggleVisibility = throttle(() => {
       if (window.scrollY > 500) {
         setIsVisible(true)
       } else {
         setIsVisible(false)
       }
-    }
+    }, 100)
 
     window.addEventListener('scroll', toggleVisibility)
     return () => window.removeEventListener('scroll', toggleVisibility)
