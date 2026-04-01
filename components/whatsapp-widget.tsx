@@ -3,15 +3,18 @@
 import { useState, useEffect } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { throttle } from '@/lib/throttle'
 
 export function WhatsAppWidget() {
   const [isVisible, setIsVisible] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
+    // Throttling scroll events to improve performance.
+    // Checks visibility status only once every 100ms.
+    const handleScroll = throttle(() => {
       setIsVisible(window.scrollY > 300)
-    }
+    }, 100)
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)

@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { Phone, MessageCircle, Mail, X } from 'lucide-react'
+import { throttle } from '@/lib/throttle'
 
 export function CTABar() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
+    // Throttling scroll events to improve performance during scroll.
+    // Checks visibility status only once every 100ms.
+    const handleScroll = throttle(() => {
       setIsVisible(window.scrollY > 400)
-    }
+    }, 100)
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
