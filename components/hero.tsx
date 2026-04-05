@@ -42,17 +42,17 @@ export function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-base px-8 h-14">
-                <a href="#contact">Get Free Quote</a>
+              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground text-base px-8 h-14">
+                <Link href="/quote">Book Free Assessment</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-2 border-primary text-primary hover:bg-primary/10 text-base px-8 h-14 bg-transparent">
-                <a href="tel:+27750119200" className="flex items-center gap-2">
+                <a href="tel:+27716226753" className="flex items-center gap-2">
                   <Phone className="h-5 w-5" />
-                  075 011 9200
+                  071 622 6753
                 </a>
               </Button>
-              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground text-base px-8 h-14">
-                <a href="https://wa.me/27750119200" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+              <Button asChild size="lg" className="bg-[#25D366] hover:bg-[#25D366]/90 text-white text-base px-8 h-14">
+                <a href="https://wa.me/27716226753?text=Hi%2C%20I%27d%20like%20to%20book%20a%20free%20on-site%20assessment" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
                   WhatsApp
                 </a>

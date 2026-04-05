@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Curtain Cleaning Johannesburg | On The Spot',
     description: 'Professional on-site curtain cleaning services in Johannesburg. No shrinkage, no damage guarantee.',
-    url: 'https://curtaincleaning.co.za',
-    siteName: 'On The Spot',
+    url: 'https://curtaincleaning.org',
+    siteName: 'On The Spot Curtain Cleaning Specialists',
     locale: 'en_ZA',
     type: 'website',
   },
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     google: 'your-google-verification-code',
   },
   alternates: {
-    canonical: 'https://curtaincleaning.co.za',
+    canonical: 'https://curtaincleaning.org',
   },
   other: {
     'geo.region': 'ZA-GT',

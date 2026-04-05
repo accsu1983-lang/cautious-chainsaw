@@ -100,14 +100,14 @@ export function Footer() {
               Company
             </h3>
             <ul className="space-y-2.5">
-              <li><Link href="#about" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">About Us</Link></li>
-              <li><Link href="#process" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Our Process</Link></li>
-              <li><Link href="#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Service Areas</Link></li>
-              <li><Link href="#faq" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">FAQ</Link></li>
-              <li><Link href="#contact" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Get a Quote</Link></li>
-              <li><Link href="#about" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Why Choose Us</Link></li>
-              <li><Link href="#testimonials" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Testimonials</Link></li>
-              <li><Link href="#newsletter" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Newsletter</Link></li>
+              <li><Link href="/about" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">About Us</Link></li>
+              <li><Link href="/process" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">How It Works</Link></li>
+              <li><Link href="/#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Service Areas</Link></li>
+              <li><Link href="/faq" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">FAQ</Link></li>
+              <li><Link href="/quote" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Book Assessment</Link></li>
+              <li><Link href="/contact" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Contact Us</Link></li>
+              <li><Link href="/#testimonials" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Testimonials</Link></li>
+              <li><Link href="/privacy" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Privacy Policy</Link></li>
             </ul>
           </div>
 
@@ -118,13 +118,13 @@ export function Footer() {
               Service Areas
             </h3>
             <ul className="space-y-2.5">
-              <li><Link href="#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Sandton</Link></li>
-              <li><Link href="#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Rosebank</Link></li>
-              <li><Link href="#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Randburg</Link></li>
-              <li><Link href="#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Fourways</Link></li>
-              <li><Link href="#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Midrand</Link></li>
-              <li><Link href="#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Centurion</Link></li>
-              <li><Link href="#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">View All Areas</Link></li>
+              <li><Link href="/areas/jhb-north" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">JHB North</Link></li>
+              <li><Link href="/areas/jhb-east" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">JHB East</Link></li>
+              <li><Link href="/areas/jhb-south" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">JHB South</Link></li>
+              <li><Link href="/areas/jhb-west" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">JHB West</Link></li>
+              <li><Link href="/areas/jhb-central" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">JHB Central</Link></li>
+              <li><Link href="/areas/pretoria-midrand" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">Pretoria & Midrand</Link></li>
+              <li><Link href="/#areas" className="text-sm text-background/80 hover:text-background hover:translate-x-1 transition-all inline-block">View All Areas</Link></li>
             </ul>
           </div>
 
@@ -142,7 +142,7 @@ export function Footer() {
                   </div>
                   <div>
                     <p className="text-background/70 text-xs mb-1">Call Us</p>
-                    <a href="tel:+27750119200" className="text-background font-semibold hover:text-accent transition-colors">075 011 9200</a>
+                    <a href="tel:+27716226753" className="text-background font-semibold hover:text-accent transition-colors">071 622 6753</a>
                   </div>
                 </div>
               </li>
@@ -153,7 +153,7 @@ export function Footer() {
                   </div>
                   <div>
                     <p className="text-background/70 text-xs mb-1">Email</p>
-                    <a href="mailto:info@curtaincleaning.co.za" className="text-background font-semibold hover:text-accent transition-colors break-all">info@curtaincleaning.co.za</a>
+                    <a href="mailto:info@curtaincleaning.org" className="text-background font-semibold hover:text-accent transition-colors break-all">info@curtaincleaning.org</a>
                   </div>
                 </div>
               </li>
@@ -190,8 +190,8 @@ export function Footer() {
               &copy; {new Date().getFullYear()} On The Spot Curtain Cleaning. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link href="#about" className="hover:text-background transition-colors">Privacy</Link>
-              <Link href="#about" className="hover:text-background transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-background transition-colors">Privacy</Link>
+              <Link href="/faq" className="hover:text-background transition-colors">FAQ</Link>
               <Link href="/sitemap.xml" className="hover:text-background transition-colors">Sitemap</Link>
             </div>
           </div>

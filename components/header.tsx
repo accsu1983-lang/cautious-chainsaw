@@ -29,31 +29,31 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6">
-            <Link href="#services" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+            <Link href="/#services" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               Services
             </Link>
-            <Link href="#process" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-              Our Process
+            <Link href="/process" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+              How It Works
             </Link>
-            <Link href="#areas" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+            <Link href="/#areas" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               Areas
             </Link>
-            <Link href="#about" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+            <Link href="/about" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               About
             </Link>
-            <Link href="#contact" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+            <Link href="/contact" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               Contact
             </Link>
           </nav>
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
-            <a href="tel:+27750119200" className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors">
+            <a href="tel:+27716226753" className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors">
               <Phone className="h-4 w-4" />
-              <span>075 011 9200</span>
+              <span>071 622 6753</span>
             </a>
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
-              <a href="#contact">Get Free Quote</a>
+            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              <Link href="/quote">Book Free Assessment</Link>
             </Button>
           </div>
 
@@ -72,47 +72,47 @@ export function Header() {
           <nav className="lg:hidden py-4 border-t border-border">
             <div className="flex flex-col gap-4">
               <Link
-                href="#services"
+                href="/#services"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Services
               </Link>
               <Link
-                href="#process"
+                href="/process"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Our Process
+                How It Works
               </Link>
               <Link
-                href="#areas"
+                href="/#areas"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Areas
               </Link>
               <Link
-                href="#about"
+                href="/about"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 About
               </Link>
               <Link
-                href="#contact"
+                href="/contact"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Contact
               </Link>
               <div className="flex flex-col gap-3 pt-4 border-t border-border">
-                <a href="tel:+27750119200" className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors">
+                <a href="tel:+27716226753" className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors">
                   <Phone className="h-4 w-4" />
-                  <span>075 011 9200</span>
+                  <span>071 622 6753</span>
                 </a>
-                <Button asChild className="w-full bg-primary hover:bg-primary/90">
-                  <a href="#contact" onClick={() => setMobileMenuOpen(false)}>Get Free Quote</a>
+                <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                  <Link href="/quote" onClick={() => setMobileMenuOpen(false)}>Book Free Assessment</Link>
                 </Button>
               </div>
             </div>

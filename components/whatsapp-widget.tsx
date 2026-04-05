@@ -17,8 +17,8 @@ export function WhatsAppWidget() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const phoneNumber = '27750119200' // WhatsApp format (no + or spaces)
-  const message = encodeURIComponent('Hi! I would like to get a quote for curtain cleaning services.')
+  const phoneNumber = '27716226753' // WhatsApp format (no + or spaces)
+  const message = encodeURIComponent('Hi! I would like to book a free on-site assessment for curtain cleaning.')
 
   return (
     <>
