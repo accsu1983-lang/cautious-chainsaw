@@ -1,0 +1,3 @@
+## 2025-05-15 - [Event Throttling and rAF]
+**Learning:** High-frequency event listeners (scroll, mousemove, touchmove) should be throttled or wrapped in `requestAnimationFrame` to prevent excessive state updates and re-renders. In Next.js 16/Turbopack, the build process automatically modifies `tsconfig.json` to include `.next/types/**/*.ts`, which violates 'no-modification' constraints and must be manually reverted.
+**Action:** Apply `throttle` (100ms) to scroll events and `requestAnimationFrame` to interaction-heavy move events. Always check and revert `tsconfig.json` after running `pnpm build`.
