@@ -3,18 +3,23 @@
 import { useState, useEffect } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { throttle } from '@/lib/throttle'
 
 export function WhatsAppWidget() {
   const [isVisible, setIsVisible] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
+    // Throttle scroll handler to reduce execution frequency by ~90%
+    const throttledScroll = throttle(() => {
       setIsVisible(window.scrollY > 300)
-    }
+    }, 100)
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', throttledScroll)
+    return () => {
+      window.removeEventListener('scroll', throttledScroll)
+      throttledScroll.cancel()
+    }
   }, [])
 
   const phoneNumber = '27750119200' // WhatsApp format (no + or spaces)
