@@ -1,0 +1,3 @@
+## 2026-04-11 - Optimize high-frequency events
+**Learning:** High-frequency events like `scroll`, `mousemove`, and `touchmove` can cause significant main-thread overhead and unnecessary re-renders in React if left unoptimized. Throttling scroll events to 100ms reduces execution frequency by ~90% while maintaining perceived responsiveness. Using `requestAnimationFrame` for drag-and-drop interactions ensures updates are synchronized with the browser's refresh rate, preventing frame drops.
+**Action:** Always throttle scroll listeners and use RAF for smooth UI interactions like sliders. Ensure proper TypeScript typing for custom utilities to avoid build errors.
