@@ -115,14 +115,23 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let frameId: number | null = null
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      if (frameId !== null) return
+
+                      frameId = requestAnimationFrame(() => {
+                        const x = moveEvent.clientX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                        frameId = null
+                      })
                     }
 
                     const handleUp = () => {
+                      if (frameId !== null) {
+                        cancelAnimationFrame(frameId)
+                      }
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
                     }
@@ -135,20 +144,31 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let frameId: number | null = null
 
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      if (frameId !== null) return
+
+                      // Using requestAnimationFrame to sync with browser refresh rate
+                      frameId = requestAnimationFrame(() => {
+                        const touch = moveEvent.touches[0]
+                        const x = touch.clientX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                        frameId = null
+                      })
                     }
 
                     const handleUp = () => {
+                      if (frameId !== null) {
+                        cancelAnimationFrame(frameId)
+                      }
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
                     }
 
-                    document.addEventListener('touchmove', handleMove)
+                    // Explicitly set passive to false for touch events to ensure smooth slider movement
+                    document.addEventListener('touchmove', handleMove, { passive: false })
                     document.addEventListener('touchend', handleUp)
                   }}
                 >
