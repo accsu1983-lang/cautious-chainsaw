@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,30 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+
+  // Cleanup RAF on unmount
+  React.useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+    }
+  }, [])
+
+  // Use a ref to track the latest position and avoid stale closures in requestAnimationFrame
+  const latestPositionRef = React.useRef(50)
+  const rafIdRef = React.useRef<number | null>(null)
+
+  const updatePosition = (percentage: number) => {
+    latestPositionRef.current = percentage
+
+    if (rafIdRef.current === null) {
+      rafIdRef.current = requestAnimationFrame(() => {
+        setComparisonPosition(latestPositionRef.current)
+        rafIdRef.current = null
+      })
+    }
+  }
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -119,7 +143,7 @@ export function BeforeAfterGallery() {
                     const handleMove = (moveEvent: MouseEvent) => {
                       const x = moveEvent.clientX - rect.left
                       const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      updatePosition(percentage)
                     }
 
                     const handleUp = () => {
@@ -140,7 +164,7 @@ export function BeforeAfterGallery() {
                       const touch = moveEvent.touches[0]
                       const x = touch.clientX - rect.left
                       const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      updatePosition(percentage)
                     }
 
                     const handleUp = () => {
@@ -148,6 +172,8 @@ export function BeforeAfterGallery() {
                       document.removeEventListener('touchend', handleUp)
                     }
 
+                    // We don't use { passive: true } because we want to ensure smooth interaction
+                    // and might want to prevent default behavior if needed.
                     document.addEventListener('touchmove', handleMove)
                     document.addEventListener('touchend', handleUp)
                   }}
