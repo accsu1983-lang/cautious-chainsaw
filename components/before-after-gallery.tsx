@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,7 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const frameId = useRef<number | null>(null)
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -53,6 +54,14 @@ export function BeforeAfterGallery() {
   }
 
   const currentProject = beforeAfterProjects[activeSlide]
+
+  useEffect(() => {
+    return () => {
+      if (frameId.current !== null) {
+        cancelAnimationFrame(frameId.current)
+      }
+    }
+  }, [])
 
   return (
     <section className="py-20 bg-secondary/30">
@@ -115,16 +124,27 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let latestX = 0
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      latestX = moveEvent.clientX
+                      if (frameId.current !== null) return
+
+                      frameId.current = requestAnimationFrame(() => {
+                        const x = latestX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                        frameId.current = null
+                      })
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
+                      if (frameId.current !== null) {
+                        cancelAnimationFrame(frameId.current)
+                        frameId.current = null
+                      }
                     }
 
                     document.addEventListener('mousemove', handleMove)
@@ -135,17 +155,27 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let latestX = 0
 
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      latestX = moveEvent.touches[0].clientX
+                      if (frameId.current !== null) return
+
+                      frameId.current = requestAnimationFrame(() => {
+                        const x = latestX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                        frameId.current = null
+                      })
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
+                      if (frameId.current !== null) {
+                        cancelAnimationFrame(frameId.current)
+                        frameId.current = null
+                      }
                     }
 
                     document.addEventListener('touchmove', handleMove)
