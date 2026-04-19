@@ -1,0 +1,4 @@
+
+## 2025-05-14 - [Event Listener Optimization Patterns]
+**Learning:** High-frequency events (scroll, mousemove, touchmove) are common performance bottlenecks in interactive landing pages. Throttling scroll events to 100ms reduces execution frequency by ~90% with zero perceptible lag for visibility toggles. For coordinate-dependent visual updates like sliders, `requestAnimationFrame` is superior to throttling as it guarantees synchronization with the browser's paint cycle, avoiding "stutter" and redundant work between frames.
+**Action:** Always use `throttle` (100ms + passive: true) for scroll-based visibility logic and `requestAnimationFrame` for coordinate-based layout/transform updates. Ensure cleanup (`.cancel()` or `cancelAnimationFrame`) is called in `useEffect` to prevent memory leaks and unexpected behavior after unmount.
