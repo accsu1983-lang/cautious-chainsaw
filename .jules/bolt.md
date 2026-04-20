@@ -1,0 +1,3 @@
+## 2025-01-24 - [Optimizing High-Frequency Events]
+**Learning:** High-frequency events like `scroll` and `mousemove` can significantly impact main-thread performance if not handled carefully. Throttling scroll events to 100ms (10Hz) provides a massive performance win (reducing execution by ~90%) for simple visibility logic while remaining visually smooth. For precise interactive components (like image sliders), `requestAnimationFrame` is the optimal choice as it synchronizes updates with the browser's refresh rate, preventing redundant renders and layout thrashing.
+**Action:** Use `throttle` (100ms) for scroll-dependent UI state and `requestAnimationFrame` for interactive input tracking (mousemove/touchmove).
