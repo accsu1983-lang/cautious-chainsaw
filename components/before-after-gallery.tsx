@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,8 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const frameId = useRef<number | null>(null)
+  const latestX = useRef<number | null>(null)
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -113,18 +115,32 @@ export function BeforeAfterGallery() {
                   onMouseDown={(e) => {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
-                    
                     const rect = parentElement.getBoundingClientRect()
 
+                    const updatePosition = () => {
+                      if (latestX.current !== null) {
+                        const x = latestX.current - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                      }
+                      frameId.current = null
+                    }
+
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      latestX.current = moveEvent.clientX
+                      if (frameId.current === null) {
+                        frameId.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
+                      if (frameId.current !== null) {
+                        cancelAnimationFrame(frameId.current)
+                        frameId.current = null
+                      }
+                      latestX.current = null
                     }
 
                     document.addEventListener('mousemove', handleMove)
@@ -133,22 +149,38 @@ export function BeforeAfterGallery() {
                   onTouchStart={(e) => {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
-                    
                     const rect = parentElement.getBoundingClientRect()
 
+                    const updatePosition = () => {
+                      if (latestX.current !== null) {
+                        const x = latestX.current - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                      }
+                      frameId.current = null
+                    }
+
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      if (moveEvent.cancelable) {
+                        moveEvent.preventDefault()
+                      }
+                      latestX.current = moveEvent.touches[0].clientX
+                      if (frameId.current === null) {
+                        frameId.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
+                      if (frameId.current !== null) {
+                        cancelAnimationFrame(frameId.current)
+                        frameId.current = null
+                      }
+                      latestX.current = null
                     }
 
-                    document.addEventListener('touchmove', handleMove)
+                    document.addEventListener('touchmove', handleMove, { passive: false })
                     document.addEventListener('touchend', handleUp)
                   }}
                 >
