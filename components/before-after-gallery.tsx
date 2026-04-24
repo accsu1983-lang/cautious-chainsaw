@@ -42,6 +42,34 @@ export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
 
+  // Use requestAnimationFrame for smoother interaction and reduced main thread load
+  const handleInteraction = (initialX: number, rect: DOMRect) => {
+    let frameId: number | null = null
+    let latestX = initialX
+
+    const updatePosition = (currentX: number) => {
+      latestX = currentX
+      if (frameId !== null) return
+
+      frameId = requestAnimationFrame(() => {
+        const x = latestX - rect.left
+        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+        setComparisonPosition(percentage)
+        frameId = null
+      })
+    }
+
+    return {
+      update: updatePosition,
+      cancel: () => {
+        if (frameId !== null) {
+          cancelAnimationFrame(frameId)
+          frameId = null
+        }
+      }
+    }
+  }
+
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
     setComparisonPosition(50)
@@ -115,14 +143,14 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    const interaction = handleInteraction(e.clientX, rect)
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      interaction.update(moveEvent.clientX)
                     }
 
                     const handleUp = () => {
+                      interaction.cancel()
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
                     }
@@ -135,19 +163,19 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    const interaction = handleInteraction(e.touches[0].clientX, rect)
 
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      interaction.update(moveEvent.touches[0].clientX)
                     }
 
                     const handleUp = () => {
+                      interaction.cancel()
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
                     }
 
+                    // Not using { passive: true } here to ensure coordinates are reliably captured
                     document.addEventListener('touchmove', handleMove)
                     document.addEventListener('touchend', handleUp)
                   }}
