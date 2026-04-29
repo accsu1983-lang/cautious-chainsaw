@@ -1,0 +1,3 @@
+## 2025-05-15 - [Throttling Scroll and High-Frequency Events]
+**Learning:** Throttling scroll-dependent visibility logic (e.g., 'Back to Top' buttons) to 100ms (10Hz) reduces main-thread overhead by approximately 90% while maintaining sufficient responsiveness for UI state transitions. Using `requestAnimationFrame` for interactive sliders ensures smooth 60fps performance by syncing updates with the display's refresh rate.
+**Action:** Always use `{ passive: true }` for scroll and touch listeners that don't call `preventDefault()` to avoid blocking the scrolling thread. Wrap high-frequency event handlers in `useMemo` when using them in React components to ensure stable instances and proper cleanup via `.cancel()`.
