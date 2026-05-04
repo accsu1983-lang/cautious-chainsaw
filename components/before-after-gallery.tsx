@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,15 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const rafId = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current)
+      }
+    }
+  }, [])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -117,14 +126,25 @@ export function BeforeAfterGallery() {
                     const rect = parentElement.getBoundingClientRect()
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      const clientX = moveEvent.clientX
+
+                      if (rafId.current !== null) return
+
+                      rafId.current = requestAnimationFrame(() => {
+                        const x = clientX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                        rafId.current = null
+                      })
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
+                      if (rafId.current !== null) {
+                        cancelAnimationFrame(rafId.current)
+                        rafId.current = null
+                      }
                     }
 
                     document.addEventListener('mousemove', handleMove)
@@ -137,18 +157,28 @@ export function BeforeAfterGallery() {
                     const rect = parentElement.getBoundingClientRect()
 
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      const clientX = moveEvent.touches[0].clientX
+
+                      if (rafId.current !== null) return
+
+                      rafId.current = requestAnimationFrame(() => {
+                        const x = clientX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                        rafId.current = null
+                      })
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
+                      if (rafId.current !== null) {
+                        cancelAnimationFrame(rafId.current)
+                        rafId.current = null
+                      }
                     }
 
-                    document.addEventListener('touchmove', handleMove)
+                    document.addEventListener('touchmove', handleMove, { passive: true })
                     document.addEventListener('touchend', handleUp)
                   }}
                 >
