@@ -1,0 +1,3 @@
+## 2025-05-05 - [High-frequency Event Throttling]
+**Learning:** Multiple components (`CTABar`, `BackToTop`, `WhatsAppWidget`) use unthrottled scroll event listeners, and `BeforeAfterGallery` uses unthrottled mouse/touch move events. These can cause significant main-thread overhead during user interaction, leading to "jank" and reduced battery life on mobile devices.
+**Action:** Implement a centralized `throttle` utility for scroll events (100ms/10Hz) and use `requestAnimationFrame` for high-frequency visual updates like the before/after slider. Use `{ passive: true }` for events that don't call `preventDefault()`.
