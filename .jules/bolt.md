@@ -1,0 +1,4 @@
+## 2026-05-06 - Throttling High-Frequency Event Listeners
+**Learning:** High-frequency events like `scroll`, `mousemove`, and `touchmove` can fire dozens of times per second. In React components, unthrottled listeners often trigger state updates on every event, leading to excessive re-renders and main-thread congestion. Throttling scroll events to 100ms (10Hz) significantly reduces overhead while remaining responsive for UI state toggles. For interactive animations like sliders, `requestAnimationFrame` ensures updates are synchronized with the browser's refresh rate, preventing unnecessary calculations between frames.
+
+**Action:** Use a shared `throttle` utility for scroll-dependent UI visibility and `requestAnimationFrame` for high-frequency interactive elements. Always use `{ passive: true }` for scroll/touch listeners when `preventDefault()` is not required to avoid scroll jank.
