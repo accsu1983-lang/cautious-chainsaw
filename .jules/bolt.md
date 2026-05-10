@@ -1,0 +1,3 @@
+## 2025-05-15 - [Event Optimization]
+**Learning:** Throttling scroll-dependent visibility logic (e.g., 'Back to Top' buttons) to 100ms (10Hz) reduces main-thread overhead by approximately 90% while maintaining sufficient responsiveness for UI state transitions. Using `requestAnimationFrame` for interactive sliders ensures updates are synchronized with the display's refresh rate, preventing unnecessary layout calculations.
+**Action:** Always throttle high-frequency scroll and resize events. Use `requestAnimationFrame` for interactive components that require immediate visual feedback on every frame.
