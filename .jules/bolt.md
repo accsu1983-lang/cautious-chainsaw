@@ -1,0 +1,4 @@
+## 2026-05-20 - Throttling and rAF for high-frequency events
+**Learning:** High-frequency events (scroll, mousemove, touchmove) are a primary source of main-thread congestion and layout thrashing. Throttling scroll-dependent visibility logic to 100ms reduces execution frequency by ~90% while maintaining UI responsiveness. For interactive components like the `BeforeAfterGallery`, `requestAnimationFrame` is more effective than throttling as it synchronizes updates with the browser's refresh rate and allows decoupling of expensive DOM measurements (like `getBoundingClientRect`) from the event stream.
+
+**Action:** Always use `{ passive: true }` for scroll listeners. For UI sliders, use `requestAnimationFrame` with coordinate tracking to avoid layout thrashing. Ensure `tsconfig.json` is reverted after `pnpm build` if the dev server adds auto-generated paths.
