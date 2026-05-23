@@ -1,0 +1,3 @@
+## 2025-05-23 - Throttling Scroll Event Listeners
+**Learning:** High-frequency events like `scroll` can execute up to 100 times per second, causing unnecessary main-thread overhead even if the handler is small (e.g., visibility threshold checks). Throttling these handlers to 100ms (10Hz) reduces execution frequency by approximately 90% without perceptible impact on UI state transitions (like showing a "Back to Top" button).
+**Action:** Always throttle or debounce scroll and resize event listeners. Use `{ passive: true }` for scroll listeners that don't call `preventDefault()` to improve scrolling performance by allowing the browser to scroll the page immediately.
