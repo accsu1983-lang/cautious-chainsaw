@@ -1,19 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Phone, MessageCircle, Mail, X } from 'lucide-react'
+import { throttle } from '@/lib/throttle'
 
 export function CTABar() {
   const [isVisible, setIsVisible] = useState(false)
 
-  useEffect(() => {
-    const handleScroll = () => {
+  // Use a 100ms throttle to reduce main thread execution frequency by ~90%
+  // during scroll events, while maintaining sufficient responsiveness.
+  const throttledScroll = useMemo(
+    () => throttle(() => {
       setIsVisible(window.scrollY > 400)
-    }
+    }, 100),
+    []
+  )
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  useEffect(() => {
+    window.addEventListener('scroll', throttledScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', throttledScroll)
+      throttledScroll.cancel()
+    }
+  }, [throttledScroll])
 
   if (!isVisible) return null
 
