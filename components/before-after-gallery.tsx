@@ -115,14 +115,27 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let rafId: number | null = null
+                    let lastX = e.clientX
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastX = moveEvent.clientX
+
+                      if (rafId === null) {
+                        rafId = requestAnimationFrame(() => {
+                          const x = lastX - rect.left
+                          const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                          setComparisonPosition(percentage)
+                          rafId = null
+                        })
+                      }
                     }
 
                     const handleUp = () => {
+                      if (rafId !== null) {
+                        cancelAnimationFrame(rafId)
+                        rafId = null
+                      }
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
                     }
@@ -135,20 +148,35 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let rafId: number | null = null
+                    let lastX = e.touches[0].clientX
 
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      // Prevent page scroll during slider interaction
+                      if (moveEvent.cancelable) moveEvent.preventDefault()
+
+                      lastX = moveEvent.touches[0].clientX
+
+                      if (rafId === null) {
+                        rafId = requestAnimationFrame(() => {
+                          const x = lastX - rect.left
+                          const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                          setComparisonPosition(percentage)
+                          rafId = null
+                        })
+                      }
                     }
 
                     const handleUp = () => {
+                      if (rafId !== null) {
+                        cancelAnimationFrame(rafId)
+                        rafId = null
+                      }
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
                     }
 
-                    document.addEventListener('touchmove', handleMove)
+                    document.addEventListener('touchmove', handleMove, { passive: false })
                     document.addEventListener('touchend', handleUp)
                   }}
                 >
