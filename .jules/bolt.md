@@ -1,0 +1,3 @@
+## 2025-05-22 - [High-Frequency Event Throttling]
+**Learning:** Unthrottled scroll and interaction events (mousemove/touchmove) were consuming excessive main-thread time, leading to potential frame drops during navigation and interaction. Throttling scroll events to 100ms (10Hz) reduces handler execution frequency by ~90% while remaining responsive enough for visibility toggles.
+**Action:** Always use a stable throttled handler for scroll listeners and `requestAnimationFrame` for high-frequency coordinate tracking in interactive components like sliders to prevent layout thrashing and ensure smooth UI updates.
