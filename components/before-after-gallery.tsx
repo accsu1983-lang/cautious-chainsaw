@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,18 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const frameRef = useRef<number | null>(null)
+  const lastXRef = useRef<number>(0)
+  const rectRef = useRef<DOMRect | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current)
+      }
+    }
+  }, [])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -76,7 +88,7 @@ export function BeforeAfterGallery() {
           <Card className="overflow-hidden border-2">
             <CardContent className="p-0">
               {/* Image Comparison Slider */}
-              <div className="relative h-[400px] md:h-[500px] bg-muted">
+              <div ref={containerRef} className="relative h-[400px] md:h-[500px] bg-muted">
                 {/* Before Image */}
                 <div className="absolute inset-0">
                   <Image
@@ -111,44 +123,68 @@ export function BeforeAfterGallery() {
                   className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
                   style={{ left: `${comparisonPosition}%` }}
                   onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
+                    if (!containerRef.current) return
+                    // Cache the rect to avoid layout thrashing during move
+                    rectRef.current = containerRef.current.getBoundingClientRect()
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastXRef.current = moveEvent.clientX
+                      if (frameRef.current === null) {
+                        // Use requestAnimationFrame to throttle updates to 60fps
+                        frameRef.current = requestAnimationFrame(() => {
+                          if (rectRef.current) {
+                            const x = lastXRef.current - rectRef.current.left
+                            const percentage = Math.max(0, Math.min(100, (x / rectRef.current.width) * 100))
+                            setComparisonPosition(percentage)
+                          }
+                          frameRef.current = null
+                        })
+                      }
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
+                      if (frameRef.current !== null) {
+                        cancelAnimationFrame(frameRef.current)
+                        frameRef.current = null
+                      }
                     }
 
                     document.addEventListener('mousemove', handleMove)
                     document.addEventListener('mouseup', handleUp)
                   }}
                   onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
+                    if (!containerRef.current) return
+                    rectRef.current = containerRef.current.getBoundingClientRect()
 
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      // Prevent scrolling while dragging the slider
+                      if (moveEvent.cancelable) moveEvent.preventDefault()
+
+                      lastXRef.current = moveEvent.touches[0].clientX
+                      if (frameRef.current === null) {
+                        frameRef.current = requestAnimationFrame(() => {
+                          if (rectRef.current) {
+                            const x = lastXRef.current - rectRef.current.left
+                            const percentage = Math.max(0, Math.min(100, (x / rectRef.current.width) * 100))
+                            setComparisonPosition(percentage)
+                          }
+                          frameRef.current = null
+                        })
+                      }
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
+                      if (frameRef.current !== null) {
+                        cancelAnimationFrame(frameRef.current)
+                        frameRef.current = null
+                      }
                     }
 
-                    document.addEventListener('touchmove', handleMove)
+                    document.addEventListener('touchmove', handleMove, { passive: false })
                     document.addEventListener('touchend', handleUp)
                   }}
                 >
