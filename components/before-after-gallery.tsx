@@ -115,16 +115,28 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let frameId: number | null = null
+                    let lastX = 0
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastX = moveEvent.clientX
+                      if (frameId !== null) return
+
+                      frameId = requestAnimationFrame(() => {
+                        const x = lastX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                        frameId = null
+                      })
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
+                      if (frameId !== null) {
+                        cancelAnimationFrame(frameId)
+                        frameId = null
+                      }
                     }
 
                     document.addEventListener('mousemove', handleMove)
@@ -135,17 +147,29 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let frameId: number | null = null
+                    let lastX = 0
 
                     const handleMove = (moveEvent: TouchEvent) => {
                       const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastX = touch.clientX
+                      if (frameId !== null) return
+
+                      frameId = requestAnimationFrame(() => {
+                        const x = lastX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                        frameId = null
+                      })
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
+                      if (frameId !== null) {
+                        cancelAnimationFrame(frameId)
+                        frameId = null
+                      }
                     }
 
                     document.addEventListener('touchmove', handleMove)
