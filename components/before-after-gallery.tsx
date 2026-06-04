@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,75 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const frameId = useRef<number | null>(null)
+  const lastX = useRef<number | null>(null)
+  const containerRectRef = useRef<DOMRect | null>(null)
+
+  const updatePosition = useCallback(() => {
+    if (lastX.current !== null && containerRectRef.current) {
+      const x = lastX.current - containerRectRef.current.left
+      const percentage = Math.max(0, Math.min(100, (x / containerRectRef.current.width) * 100))
+      setComparisonPosition(percentage)
+    }
+    frameId.current = null
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    lastX.current = e.clientX
+    if (frameId.current === null) {
+      frameId.current = requestAnimationFrame(updatePosition)
+    }
+  }, [updatePosition])
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    lastX.current = e.touches[0].clientX
+    if (frameId.current === null) {
+      frameId.current = requestAnimationFrame(updatePosition)
+    }
+  }, [updatePosition])
+
+  const handleDragEnd = useCallback(() => {
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleDragEnd)
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleDragEnd)
+
+    if (frameId.current !== null) {
+      cancelAnimationFrame(frameId.current)
+      frameId.current = null
+    }
+    containerRectRef.current = null
+  }, [handleMouseMove, handleTouchMove])
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    const container = containerRef.current
+    if (!container) return
+
+    containerRectRef.current = container.getBoundingClientRect()
+
+    if ('clientX' in e) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleDragEnd)
+    } else {
+      document.addEventListener('touchmove', handleTouchMove)
+      document.addEventListener('touchend', handleDragEnd)
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      // Ensure all event listeners and animation frames are cleaned up on unmount
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleDragEnd)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleDragEnd)
+
+      if (frameId.current !== null) {
+        cancelAnimationFrame(frameId.current)
+      }
+    }
+  }, [handleMouseMove, handleDragEnd, handleTouchMove])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -76,7 +145,7 @@ export function BeforeAfterGallery() {
           <Card className="overflow-hidden border-2">
             <CardContent className="p-0">
               {/* Image Comparison Slider */}
-              <div className="relative h-[400px] md:h-[500px] bg-muted">
+              <div ref={containerRef} className="relative h-[400px] md:h-[500px] bg-muted">
                 {/* Before Image */}
                 <div className="absolute inset-0">
                   <Image
@@ -110,47 +179,8 @@ export function BeforeAfterGallery() {
                 <div
                   className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
                   style={{ left: `${comparisonPosition}%` }}
-                  onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
-                    }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
-                  }}
-                  onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
-                  }}
+                  onMouseDown={handleDragStart}
+                  onTouchStart={handleDragStart}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                     <div className="flex gap-1">
