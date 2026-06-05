@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,10 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRectRef = useRef<DOMRect | null>(null)
+  const frameId = useRef<number | null>(null)
+  const lastX = useRef<number>(0)
+  const [isDragging, setIsDragging] = useState(false)
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -53,6 +57,52 @@ export function BeforeAfterGallery() {
   }
 
   const currentProject = beforeAfterProjects[activeSlide]
+
+  const handleMove = useCallback((clientX: number) => {
+    lastX.current = clientX
+    if (frameId.current !== null) return
+
+    frameId.current = requestAnimationFrame(() => {
+      if (!containerRectRef.current) return
+      const rect = containerRectRef.current
+      const x = lastX.current - rect.left
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+      setComparisonPosition(percentage)
+      frameId.current = null
+    })
+  }, [])
+
+  const handleEnd = useCallback(() => {
+    setIsDragging(false)
+    if (frameId.current !== null) {
+      cancelAnimationFrame(frameId.current)
+      frameId.current = null
+    }
+    containerRectRef.current = null
+  }, [])
+
+  useEffect(() => {
+    if (!isDragging) return
+
+    const onMouseMove = (e: MouseEvent) => handleMove(e.clientX)
+    const onTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientX)
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', handleEnd)
+    document.addEventListener('touchmove', onTouchMove)
+    document.addEventListener('touchend', handleEnd)
+
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', handleEnd)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', handleEnd)
+      if (frameId.current !== null) {
+        cancelAnimationFrame(frameId.current)
+        frameId.current = null
+      }
+    }
+  }, [isDragging, handleMove, handleEnd])
 
   return (
     <section className="py-20 bg-secondary/30">
@@ -113,43 +163,14 @@ export function BeforeAfterGallery() {
                   onMouseDown={(e) => {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
-                    }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
+                    containerRectRef.current = parentElement.getBoundingClientRect()
+                    setIsDragging(true)
                   }}
                   onTouchStart={(e) => {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
+                    containerRectRef.current = parentElement.getBoundingClientRect()
+                    setIsDragging(true)
                   }}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
