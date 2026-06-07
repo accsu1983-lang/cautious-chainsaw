@@ -1,0 +1,3 @@
+## 2025-06-07 - Throttling Scroll Listeners for UI Visibility
+**Learning:** Multiple components (`CTABar`, `BackToTop`, `WhatsAppWidget`) used unthrottled scroll listeners to toggle visibility. On high-refresh-rate displays or fast scrolling, this triggers many unnecessary state updates and calculations per second. A 100ms throttle (10Hz) is sufficient for UI state transitions like "show/hide" and reduces event handler execution frequency by ~90%.
+**Action:** Use the `throttle` utility for scroll-dependent visibility logic and always include `{ passive: true }` to avoid blocking the main thread during scrolling.
