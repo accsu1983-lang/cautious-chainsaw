@@ -1,24 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { ArrowUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { throttle } from '@/lib/throttle'
 
 export function BackToTop() {
   const [isVisible, setIsVisible] = useState(false)
 
-  useEffect(() => {
-    const toggleVisibility = () => {
-      if (window.scrollY > 500) {
-        setIsVisible(true)
-      } else {
-        setIsVisible(false)
-      }
-    }
+  const throttledScroll = useMemo(
+    () =>
+      throttle(() => {
+        setIsVisible(window.scrollY > 500)
+      }, 100),
+    []
+  )
 
-    window.addEventListener('scroll', toggleVisibility)
-    return () => window.removeEventListener('scroll', toggleVisibility)
-  }, [])
+  useEffect(() => {
+    // A 100ms throttle reduces event handler execution frequency by ~90%
+    // compared to unthrottled scroll events (which can fire at 60Hz-120Hz).
+    window.addEventListener('scroll', throttledScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', throttledScroll)
+      throttledScroll.cancel()
+    }
+  }, [throttledScroll])
 
   const scrollToTop = () => {
     window.scrollTo({
