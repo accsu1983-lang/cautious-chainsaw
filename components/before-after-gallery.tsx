@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,9 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRectRef = useRef<DOMRect | null>(null)
+  const lastXRef = useRef<number | null>(null)
+  const frameIdRef = useRef<number | null>(null)
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -53,6 +56,25 @@ export function BeforeAfterGallery() {
   }
 
   const currentProject = beforeAfterProjects[activeSlide]
+
+  const updatePosition = () => {
+    if (lastXRef.current !== null && containerRectRef.current) {
+      const rect = containerRectRef.current
+      const x = lastXRef.current - rect.left
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+      setComparisonPosition(percentage)
+    }
+    frameIdRef.current = null
+  }
+
+  // Ensure cleanup of any pending animation frames
+  useEffect(() => {
+    return () => {
+      if (frameIdRef.current !== null) {
+        cancelAnimationFrame(frameIdRef.current)
+      }
+    }
+  }, [])
 
   return (
     <section className="py-20 bg-secondary/30">
@@ -114,17 +136,24 @@ export function BeforeAfterGallery() {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
                     
-                    const rect = parentElement.getBoundingClientRect()
+                    // Cache container dimensions once at the start of interaction
+                    // to prevent layout thrashing (repeated getBoundingClientRect calls)
+                    containerRectRef.current = parentElement.getBoundingClientRect()
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastXRef.current = moveEvent.clientX
+                      if (frameIdRef.current === null) {
+                        frameIdRef.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
+                      if (frameIdRef.current !== null) {
+                        cancelAnimationFrame(frameIdRef.current)
+                        frameIdRef.current = null
+                      }
                     }
 
                     document.addEventListener('mousemove', handleMove)
@@ -134,18 +163,23 @@ export function BeforeAfterGallery() {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
                     
-                    const rect = parentElement.getBoundingClientRect()
+                    containerRectRef.current = parentElement.getBoundingClientRect()
 
                     const handleMove = (moveEvent: TouchEvent) => {
                       const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastXRef.current = touch.clientX
+                      if (frameIdRef.current === null) {
+                        frameIdRef.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
+                      if (frameIdRef.current !== null) {
+                        cancelAnimationFrame(frameIdRef.current)
+                        frameIdRef.current = null
+                      }
                     }
 
                     document.addEventListener('touchmove', handleMove)
