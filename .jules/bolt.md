@@ -1,0 +1,3 @@
+## 2025-06-11 - Throttling Scroll Event Listeners
+**Learning:** Throttling scroll-dependent visibility logic (e.g., 'Back to Top' buttons) to 100ms (10Hz) reduces main-thread overhead by approximately 90% while maintaining sufficient responsiveness for UI state transitions. Using `{ passive: true }` further optimizes by telling the browser the listener won't call `preventDefault()`, allowing for smoother scrolling.
+**Action:** Always throttle high-frequency events like `scroll`, `resize`, or `mousemove` when they trigger state updates or layout-heavy operations. Wrap throttled functions in `useMemo` in React components to maintain stability across renders, and ensure `.cancel()` is called on unmount.
