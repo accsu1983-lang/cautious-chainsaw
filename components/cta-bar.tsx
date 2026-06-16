@@ -2,16 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { Phone, MessageCircle, Mail, X } from 'lucide-react'
+import { throttle } from '@/lib/throttle'
 
 export function CTABar() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
+    // ⚡ Bolt: Throttling scroll listener to reduce main-thread work.
+    // 100ms delay (10Hz) is plenty for UI visibility logic.
+    const handleScroll = throttle(() => {
       setIsVisible(window.scrollY > 400)
-    }
+    }, 100)
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
