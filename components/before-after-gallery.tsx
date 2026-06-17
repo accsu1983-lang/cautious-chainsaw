@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,18 +41,73 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRectRef = useRef<DOMRect | null>(null)
+  const frameIdRef = useRef<number | null>(null)
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
     setComparisonPosition(50)
-  }
+  }, [])
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     setActiveSlide((prev) => (prev - 1 + beforeAfterProjects.length) % beforeAfterProjects.length)
     setComparisonPosition(50)
-  }
+  }, [])
 
   const currentProject = beforeAfterProjects[activeSlide]
+
+  const updatePosition = useCallback((clientX: number) => {
+    if (!containerRectRef.current) return
+
+    const rect = containerRectRef.current
+    const x = clientX - rect.left
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+    setComparisonPosition(percentage)
+    frameIdRef.current = null
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (frameIdRef.current !== null) cancelAnimationFrame(frameIdRef.current)
+    frameIdRef.current = requestAnimationFrame(() => updatePosition(e.clientX))
+  }, [updatePosition])
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    // Prevent scrolling while interacting with the slider
+    if (e.cancelable) e.preventDefault()
+    if (frameIdRef.current !== null) cancelAnimationFrame(frameIdRef.current)
+    frameIdRef.current = requestAnimationFrame(() => updatePosition(e.touches[0].clientX))
+  }, [updatePosition])
+
+  const handleMouseUp = useCallback(() => {
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    if (frameIdRef.current !== null) {
+      cancelAnimationFrame(frameIdRef.current)
+      frameIdRef.current = null
+    }
+  }, [handleMouseMove])
+
+  const handleTouchEnd = useCallback(() => {
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleTouchEnd)
+    if (frameIdRef.current !== null) {
+      cancelAnimationFrame(frameIdRef.current)
+      frameIdRef.current = null
+    }
+  }, [handleTouchMove])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+      if (frameIdRef.current !== null) {
+        cancelAnimationFrame(frameIdRef.current)
+      }
+    }
+  }, [handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd])
 
   return (
     <section className="py-20 bg-secondary/30">
@@ -114,42 +169,19 @@ export function BeforeAfterGallery() {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
                     
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
-                    }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
+                    // Cache dimensions once on start to avoid layout thrashing in move handler
+                    containerRectRef.current = parentElement.getBoundingClientRect()
+                    document.addEventListener('mousemove', handleMouseMove)
+                    document.addEventListener('mouseup', handleMouseUp)
                   }}
                   onTouchStart={(e) => {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
                     
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
+                    // Cache dimensions once on start to avoid layout thrashing in move handler
+                    containerRectRef.current = parentElement.getBoundingClientRect()
+                    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+                    document.addEventListener('touchend', handleTouchEnd)
                   }}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
