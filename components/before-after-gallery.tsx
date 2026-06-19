@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,77 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isDragging = useRef(false)
+  const frameId = useRef<number | null>(null)
+  const containerRectRef = useRef<DOMRect | null>(null)
+
+  const updatePosition = useCallback((clientX: number) => {
+    if (!containerRectRef.current) return
+
+    const rect = containerRectRef.current
+    const x = clientX - rect.left
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+    setComparisonPosition(percentage)
+    frameId.current = null
+  }, [])
+
+  const handleMove = useCallback((clientX: number) => {
+    if (!isDragging.current) return
+
+    if (frameId.current !== null) {
+      cancelAnimationFrame(frameId.current)
+    }
+
+    frameId.current = requestAnimationFrame(() => updatePosition(clientX))
+  }, [updatePosition])
+
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    handleMove(e.clientX)
+  }, [handleMove])
+
+  const onTouchMove = useCallback((e: TouchEvent) => {
+    if (e.cancelable) e.preventDefault()
+    handleMove(e.touches[0].clientX)
+  }, [handleMove])
+
+  const stopDragging = useCallback(() => {
+    isDragging.current = false
+    containerRectRef.current = null
+    if (frameId.current !== null) {
+      cancelAnimationFrame(frameId.current)
+      frameId.current = null
+    }
+    document.removeEventListener('mousemove', onMouseMove)
+    document.removeEventListener('mouseup', stopDragging)
+    document.removeEventListener('touchmove', onTouchMove)
+    document.removeEventListener('touchend', stopDragging)
+  }, [onMouseMove, onTouchMove])
+
+  const startDragging = useCallback((clientX: number) => {
+    if (!containerRef.current) return
+    isDragging.current = true
+    containerRectRef.current = containerRef.current.getBoundingClientRect()
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', stopDragging)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', stopDragging)
+
+    handleMove(clientX)
+  }, [onMouseMove, onTouchMove, stopDragging, handleMove])
+
+  useEffect(() => {
+    return () => {
+      if (frameId.current !== null) {
+        cancelAnimationFrame(frameId.current)
+      }
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', stopDragging)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', stopDragging)
+    }
+  }, [onMouseMove, onTouchMove, stopDragging])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -76,7 +147,10 @@ export function BeforeAfterGallery() {
           <Card className="overflow-hidden border-2">
             <CardContent className="p-0">
               {/* Image Comparison Slider */}
-              <div className="relative h-[400px] md:h-[500px] bg-muted">
+              <div
+                ref={containerRef}
+                className="relative h-[400px] md:h-[500px] bg-muted select-none touch-none"
+              >
                 {/* Before Image */}
                 <div className="absolute inset-0">
                   <Image
@@ -84,15 +158,16 @@ export function BeforeAfterGallery() {
                     alt={`Before ${currentProject.title}`}
                     fill
                     className="object-cover"
+                    draggable={false}
                   />
-                  <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                  <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold pointer-events-none">
                     BEFORE
                   </div>
                 </div>
 
                 {/* After Image with Clip */}
                 <div
-                  className="absolute inset-0"
+                  className="absolute inset-0 pointer-events-none"
                   style={{ clipPath: `inset(0 0 0 ${comparisonPosition}%)` }}
                 >
                   <Image
@@ -100,6 +175,7 @@ export function BeforeAfterGallery() {
                     alt={`After ${currentProject.title}`}
                     fill
                     className="object-cover"
+                    draggable={false}
                   />
                   <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                     AFTER
@@ -108,49 +184,10 @@ export function BeforeAfterGallery() {
 
                 {/* Slider Handle */}
                 <div
-                  className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
+                  className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group z-20"
                   style={{ left: `${comparisonPosition}%` }}
-                  onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
-                    }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
-                  }}
-                  onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
-                  }}
+                  onMouseDown={(e) => startDragging(e.clientX)}
+                  onTouchStart={(e) => startDragging(e.touches[0].clientX)}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                     <div className="flex gap-1">
@@ -163,14 +200,14 @@ export function BeforeAfterGallery() {
                 {/* Navigation Arrows */}
                 <button
                   onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-30"
                   aria-label="Previous project"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-10"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-30"
                   aria-label="Next project"
                 >
                   <ChevronRight className="h-5 w-5" />
