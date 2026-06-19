@@ -15,9 +15,9 @@ import { Contact } from '@/components/contact'
 import { Footer } from '@/components/footer'
 import { CTABar } from '@/components/cta-bar'
 import { WhatsAppWidget } from '@/components/whatsapp-widget'
-import { ExitIntentPopup } from '@/components/exit-intent-popup'
 import { BackToTop } from '@/components/back-to-top'
 import { SchemaMarkup } from '@/components/schema-markup'
+import { OverlayComponents } from '@/components/overlay-components'
 
 export default function Home() {
   return (
@@ -43,7 +43,7 @@ export default function Home() {
       <CTABar />
       <WhatsAppWidget />
       <BackToTop />
-      <ExitIntentPopup />
+      <OverlayComponents />
     </>
   )
 }
