@@ -1,0 +1,3 @@
+## 2026-06-20 - Throttling scroll events and requestAnimationFrame for UI interactions
+**Learning:** Throttling scroll events (e.g., 100ms) significantly reduces main-thread overhead by decreasing the frequency of state updates during rapid scrolling. For interactive sliders like `BeforeAfterGallery`, using `requestAnimationFrame` ensures that state updates and DOM manipulations are synchronized with the browser's refresh rate, preventing layout thrashing from repeated `getBoundingClientRect` calls and unnecessary re-renders.
+**Action:** Always throttle scroll/resize handlers and use `requestAnimationFrame` for high-frequency coordinate-based interactions to maintain 60fps responsiveness.
