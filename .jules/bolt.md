@@ -1,0 +1,3 @@
+## 2025-06-25 - Scroll and Interaction Optimization
+**Learning:** Throttling scroll-dependent visibility logic (e.g., 'Back to Top' buttons) to 100ms (10Hz) reduces main-thread overhead while maintaining responsiveness. For high-frequency interactive events like drag sliders, `requestAnimationFrame` is superior as it synchronizes updates with the browser's refresh rate and avoids layout thrashing when container dimensions are cached.
+**Action:** Use `throttle` for scroll/resize visibility checks and `requestAnimationFrame` for interactive dragging/panning components. Always cache static dimensions (like `getBoundingClientRect`) at the start of an interaction (mousedown/touchstart).
