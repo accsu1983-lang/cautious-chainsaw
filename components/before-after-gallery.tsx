@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,9 +38,62 @@ const beforeAfterProjects = [
   }
 ]
 
+import { useCallback } from 'react'
+
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRectRef = useRef<DOMRect | null>(null)
+  const requestRef = useRef<number | null>(null)
+  const lastXRef = useRef<number>(0)
+
+  const updatePosition = useCallback(() => {
+    if (containerRectRef.current) {
+      const rect = containerRectRef.current
+      const percentage = Math.max(0, Math.min(100, ((lastXRef.current - rect.left) / rect.width) * 100))
+      setComparisonPosition(percentage)
+    }
+    requestRef.current = null
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    lastXRef.current = e.clientX
+    if (requestRef.current === null) {
+      requestRef.current = requestAnimationFrame(updatePosition)
+    }
+  }, [updatePosition])
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    lastXRef.current = e.touches[0].clientX
+    if (requestRef.current === null) {
+      requestRef.current = requestAnimationFrame(updatePosition)
+    }
+  }, [updatePosition])
+
+  const handleMouseUp = useCallback(() => {
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    containerRectRef.current = null
+  }, [handleMouseMove])
+
+  const handleTouchEnd = useCallback(() => {
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleTouchEnd)
+    containerRectRef.current = null
+  }, [handleTouchMove])
+
+  useEffect(() => {
+    return () => {
+      if (requestRef.current !== null) {
+        cancelAnimationFrame(requestRef.current)
+      }
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -76,7 +129,7 @@ export function BeforeAfterGallery() {
           <Card className="overflow-hidden border-2">
             <CardContent className="p-0">
               {/* Image Comparison Slider */}
-              <div className="relative h-[400px] md:h-[500px] bg-muted">
+              <div ref={containerRef} className="relative h-[400px] md:h-[500px] bg-muted">
                 {/* Before Image */}
                 <div className="absolute inset-0">
                   <Image
@@ -111,45 +164,20 @@ export function BeforeAfterGallery() {
                   className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
                   style={{ left: `${comparisonPosition}%` }}
                   onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                    if (containerRef.current) {
+                      containerRectRef.current = containerRef.current.getBoundingClientRect()
+                      lastXRef.current = e.clientX
+                      document.addEventListener('mousemove', handleMouseMove)
+                      document.addEventListener('mouseup', handleMouseUp)
                     }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
-                    }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
                   }}
                   onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                    if (containerRef.current) {
+                      containerRectRef.current = containerRef.current.getBoundingClientRect()
+                      lastXRef.current = e.touches[0].clientX
+                      document.addEventListener('touchmove', handleTouchMove)
+                      document.addEventListener('touchend', handleTouchEnd)
                     }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
                   }}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
