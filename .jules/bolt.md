@@ -1,0 +1,3 @@
+## 2026-06-30 - [Event Handler Optimization]
+**Learning:** High-frequency events like `scroll` and `mousemove` can cause significant layout thrashing and unnecessary React re-renders. Throttling scroll events to 100ms and using `requestAnimationFrame` for interactive sliders drastically reduces main thread load. Caching `getBoundingClientRect` results at the start of an interaction (e.g., `mousedown`) further prevents forced synchronous layouts.
+**Action:** Always throttle scroll listeners and use `requestAnimationFrame` for custom drag/slide interactions. Prefer caching dimensions during interaction start rather than calculating them inside the move handler.
