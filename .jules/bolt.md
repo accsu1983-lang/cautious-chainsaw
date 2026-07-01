@@ -1,0 +1,3 @@
+## 2026-07-01 - Optimizing high-frequency event listeners
+**Learning:** High-frequency events like `scroll`, `mousemove`, and `touchmove` can cause significant performance degradation if they trigger frequent state updates or layout calculations. Throttling is effective for scroll events where immediate feedback isn't critical, while `requestAnimationFrame` is superior for smooth visual updates synced with the browser's refresh rate.
+**Action:** Use `throttle` with `{ passive: true }` for scroll-dependent visibility logic. Use `requestAnimationFrame` and a coordinate tracking ref for interactive components like sliders to prevent layout thrashing and ensure visual smoothness.
