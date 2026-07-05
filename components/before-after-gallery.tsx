@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,10 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRectRef = useRef<DOMRect | null>(null)
+  const lastXRef = useRef<number>(50)
+  const frameIdRef = useRef<number | null>(null)
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -53,6 +57,32 @@ export function BeforeAfterGallery() {
   }
 
   const currentProject = beforeAfterProjects[activeSlide]
+
+  // Cleanup frame on unmount
+  useEffect(() => {
+    return () => {
+      if (frameIdRef.current !== null) {
+        cancelAnimationFrame(frameIdRef.current)
+      }
+    }
+  }, [])
+
+  const handleMove = (clientX: number) => {
+    if (!containerRectRef.current) return
+
+    const rect = containerRectRef.current
+    const x = clientX - rect.left
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+
+    lastXRef.current = percentage
+
+    if (frameIdRef.current === null) {
+      frameIdRef.current = requestAnimationFrame(() => {
+        setComparisonPosition(lastXRef.current)
+        frameIdRef.current = null
+      })
+    }
+  }
 
   return (
     <section className="py-20 bg-secondary/30">
@@ -76,7 +106,7 @@ export function BeforeAfterGallery() {
           <Card className="overflow-hidden border-2">
             <CardContent className="p-0">
               {/* Image Comparison Slider */}
-              <div className="relative h-[400px] md:h-[500px] bg-muted">
+              <div ref={containerRef} className="relative h-[400px] md:h-[500px] bg-muted">
                 {/* Before Image */}
                 <div className="absolute inset-0">
                   <Image
@@ -110,46 +140,31 @@ export function BeforeAfterGallery() {
                 <div
                   className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
                   style={{ left: `${comparisonPosition}%` }}
-                  onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                  onMouseDown={() => {
+                    if (containerRef.current) {
+                      containerRectRef.current = containerRef.current.getBoundingClientRect()
                     }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
+                    const onMouseMove = (e: MouseEvent) => handleMove(e.clientX)
+                    const onMouseUp = () => {
+                      document.removeEventListener('mousemove', onMouseMove)
+                      document.removeEventListener('mouseup', onMouseUp)
+                      containerRectRef.current = null
                     }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
+                    document.addEventListener('mousemove', onMouseMove)
+                    document.addEventListener('mouseup', onMouseUp)
                   }}
-                  onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                  onTouchStart={() => {
+                    if (containerRef.current) {
+                      containerRectRef.current = containerRef.current.getBoundingClientRect()
                     }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
+                    const onTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientX)
+                    const onTouchEnd = () => {
+                      document.removeEventListener('touchmove', onTouchMove)
+                      document.removeEventListener('touchend', onTouchEnd)
+                      containerRectRef.current = null
                     }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
+                    document.addEventListener('touchmove', onTouchMove, { passive: true })
+                    document.addEventListener('touchend', onTouchEnd)
                   }}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
