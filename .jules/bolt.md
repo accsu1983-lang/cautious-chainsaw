@@ -1,0 +1,3 @@
+## 2025-05-15 - [Event Listener Optimization]
+**Learning:** High-frequency event listeners (scroll, mousemove, touchmove) are common performance bottlenecks in landing pages with interactive elements. Throttling scroll events to ~100ms significantly reduces the number of state updates without sacrificing UX, while `requestAnimationFrame` is essential for butter-smooth slider interactions. Caching bounding rectangles during drag interactions prevents layout thrashing by avoiding repeated `getBoundingClientRect` calls in every frame.
+**Action:** Always check for unthrottled scroll listeners and synchronous DOM-bound move handlers in interactive components. Apply `throttle` for visibility checks and `requestAnimationFrame` for continuous visual updates.
