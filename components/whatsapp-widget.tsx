@@ -1,21 +1,33 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { throttle } from '@/lib/throttle'
 
 export function WhatsAppWidget() {
   const [isVisible, setIsVisible] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
-  useEffect(() => {
-    const handleScroll = () => {
+  // ⚡ BOLT OPTIMIZATION: Throttled scroll listener
+  // Using useMemo to avoid re-creating the throttled function on every render,
+  // ensuring that the same throttled reference is used for event listener addition/removal.
+  const throttledScroll = useMemo(() => {
+    return throttle(() => {
       setIsVisible(window.scrollY > 300)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    }, 100)
   }, [])
+
+  useEffect(() => {
+    // ⚡ BOLT OPTIMIZATION: Use { passive: true } to prevent main-thread blocking during scrolling.
+    window.addEventListener('scroll', throttledScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', throttledScroll)
+      // ⚡ BOLT OPTIMIZATION: Cancel pending timeout to prevent memory leaks on unmount.
+      throttledScroll.cancel()
+    }
+  }, [throttledScroll])
 
   const phoneNumber = '27750119200' // WhatsApp format (no + or spaces)
   const message = encodeURIComponent('Hi! I would like to get a quote for curtain cleaning services.')
