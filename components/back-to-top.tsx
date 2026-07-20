@@ -1,24 +1,32 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { ArrowUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { throttle } from '@/lib/throttle'
 
 export function BackToTop() {
   const [isVisible, setIsVisible] = useState(false)
 
-  useEffect(() => {
-    const toggleVisibility = () => {
-      if (window.scrollY > 500) {
-        setIsVisible(true)
-      } else {
-        setIsVisible(false)
-      }
-    }
-
-    window.addEventListener('scroll', toggleVisibility)
-    return () => window.removeEventListener('scroll', toggleVisibility)
+  // ⚡ BOLT OPTIMIZATION: Throttled scroll listener
+  // Using useMemo to avoid re-creating the throttled function on every render,
+  // ensuring that the same throttled reference is used for event listener addition/removal.
+  const throttledScroll = useMemo(() => {
+    return throttle(() => {
+      setIsVisible(window.scrollY > 500)
+    }, 100)
   }, [])
+
+  useEffect(() => {
+    // ⚡ BOLT OPTIMIZATION: Use { passive: true } to prevent main-thread blocking during scrolling.
+    window.addEventListener('scroll', throttledScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', throttledScroll)
+      // ⚡ BOLT OPTIMIZATION: Cancel pending timeout to prevent memory leaks on unmount.
+      throttledScroll.cancel()
+    }
+  }, [throttledScroll])
 
   const scrollToTop = () => {
     window.scrollTo({
