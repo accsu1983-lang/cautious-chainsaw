@@ -1,0 +1,3 @@
+## 2025-02-18 - High-Frequency Scroll Listener Optimization
+**Learning:** Multiple separate floating UI components (BackToTop, CTABar, WhatsAppWidget) all binding raw scroll listeners can saturate the main thread with scroll events and cause excessive React state updates. Throttling these listeners using a custom cancellation-enabled throttle utility with a 100ms interval and passive event binding preserves battery, improves scrolling smoothness, and prevents memory leaks.
+**Action:** When adding or optimizing floating UI/UX components that depend on page scroll depth, always wrap event handlers in a persistent, memoized throttle function and leverage passive event listener configurations.
