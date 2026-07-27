@@ -1,0 +1,3 @@
+## 2026-07-26 - Throttling High-Frequency Scroll Event Listeners
+**Learning:** Raw scroll event listeners in multiple floating UI components (`BackToTop`, `CTABar`, `WhatsAppWidget`) create high overhead by running excessively during scrolling, which causes layout thrashing and redundant React state updates. Implementing a custom lightweight `throttle` utility with a 100ms interval and utilizing `{ passive: true }` event options prevents unnecessary thread execution and optimizes scrolling rendering performance.
+**Action:** Always wrap high-frequency listeners in a persistent memoized `throttle` call and configure events with `{ passive: true }` whenever possible to keep the main thread unblocked.
