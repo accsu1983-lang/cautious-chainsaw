@@ -1,0 +1,3 @@
+## 2025-08-04 - Scroll Event Throttling and Cleanup
+**Learning:** High-frequency event listeners such as window 'scroll' can trigger excessive main-thread recalculations and layout thrashing. Throttling these listeners using `requestAnimationFrame` and specifying `{ passive: true }` resolves this overhead. Crucially, in React components, storing the animation frame ID and cancelling any pending frames in the `useEffect` cleanup function prevents potential memory leaks or state updates on unmounted components.
+**Action:** Always throttle scroll/resize listeners using requestAnimationFrame with passive option, and ensure cancelAnimationFrame is called in React lifecycle cleanup hooks.

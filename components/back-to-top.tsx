@@ -8,16 +8,34 @@ export function BackToTop() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    // ⚡ BOLT OPTIMIZATION: Throttling scroll events with requestAnimationFrame
+    // and setting `{ passive: true }` avoids layout-thrashing, eliminates scroll-jank,
+    // and significantly reduces main-thread overhead on high-frequency scroll ticks.
+    let ticking = false
+    let frameId: number | null = null
+
     const toggleVisibility = () => {
-      if (window.scrollY > 500) {
-        setIsVisible(true)
-      } else {
-        setIsVisible(false)
+      if (!ticking) {
+        frameId = window.requestAnimationFrame(() => {
+          if (window.scrollY > 500) {
+            setIsVisible(true)
+          } else {
+            setIsVisible(false)
+          }
+          ticking = false
+          frameId = null
+        })
+        ticking = true
       }
     }
 
-    window.addEventListener('scroll', toggleVisibility)
-    return () => window.removeEventListener('scroll', toggleVisibility)
+    window.addEventListener('scroll', toggleVisibility, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', toggleVisibility)
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
   }, [])
 
   const scrollToTop = () => {
