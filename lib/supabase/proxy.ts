@@ -6,6 +6,19 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  // ⚡ BOLT OPTIMIZATION: Skip getUser() for anonymous visitors on public routes
+  // This avoids expensive auth checks (and potential DB / API roundtrips) for standard page visits and bots,
+  // drastically improving Time To First Byte (TTFB).
+  const isProtectedRoute =
+    request.nextUrl.pathname.startsWith('/protected') ||
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/api/admin')
+  const hasSupabaseCookie = request.cookies.getAll().some((cookie) => cookie.name.startsWith('sb-'))
+
+  if (!isProtectedRoute && !hasSupabaseCookie) {
+    return supabaseResponse
+  }
+
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
   const supabase = createServerClient(
