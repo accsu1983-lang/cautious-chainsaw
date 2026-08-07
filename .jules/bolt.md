@@ -1,0 +1,3 @@
+## 2025-03-05 - [Supabase Middleware Session Optimization Early Return Bypass]
+**Learning:** Instantiating the Supabase client and executing `supabase.auth.getUser()` in global middleware/proxy for every public page view introduces massive TTFB overhead and API limits drain. Check for Supabase cookies (`sb-` prefix) and route protection prefix *before* creating the client.
+**Action:** Implement an early return bypass checking `!isProtectedRoute && !hasSupabaseCookie` at the start of proxy middleware, and ensure API routes under the protected scope correctly return a `401 JSON` response instead of a standard UI `/auth/login` redirect.

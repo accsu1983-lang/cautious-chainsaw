@@ -2,6 +2,24 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // ⚡ BOLT OPTIMIZATION: Early-return bypass for anonymous requests to public routes
+  // This avoids instantiating the Supabase client and calling the expensive `supabase.auth.getUser()`
+  // (which makes a network call to fetch user session) for anonymous visitors on standard pages.
+  const isProtectedRoute =
+    pathname.startsWith('/protected') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin')
+
+  const hasSupabaseCookie = request.cookies.getAll().some((cookie) =>
+    cookie.name.startsWith('sb-')
+  )
+
+  if (!isProtectedRoute && !hasSupabaseCookie) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -42,11 +60,15 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (
-    // if the user is not logged in and the app path, in this case, /protected, is accessed, redirect to the login page
-    request.nextUrl.pathname.startsWith('/protected') &&
+    // If the user is not logged in and a protected route is accessed
+    isProtectedRoute &&
     !user
   ) {
-    // no user, potentially respond by redirecting the user to the login page
+    // API routes should return a 401 Unauthorized status instead of a redirect
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    // No user, respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
