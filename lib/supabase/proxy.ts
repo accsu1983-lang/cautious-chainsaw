@@ -2,6 +2,29 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // Check if it's a protected route
+  const isProtectedRoute =
+    pathname.startsWith('/protected') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin')
+
+  // Check for any Supabase auth cookies
+  const hasSupabaseCookie = request.cookies.getAll().some((cookie) =>
+    cookie.name.startsWith('sb-'),
+  )
+
+  // ⚡ BOLT OPTIMIZATION:
+  // Skip client instantiation and session validation (which makes an external network call via supabase.auth.getUser())
+  // if it is a public route and there are no Supabase auth cookies present (i.e. anonymous session).
+  // This drastically reduces TTFB (Time to First Byte) by avoiding blocking network roundtrips on all public pages.
+  if (!isProtectedRoute && !hasSupabaseCookie) {
+    return NextResponse.next({
+      request,
+    })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
