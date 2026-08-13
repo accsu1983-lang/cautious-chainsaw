@@ -2,9 +2,27 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // ⚡ BOLT OPTIMIZATION: Skip Supabase client initialization and API session checks entirely
+  // for static/public visitors who do not have a Supabase cookie (names beginning with 'sb-')
+  // and are not requesting any protected routes. This drastically improves TTFB.
+  const isProtectedRoute =
+    pathname.startsWith('/protected') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin')
+
+  const hasSupabaseCookie = request.cookies.getAll().some((cookie) =>
+    cookie.name.startsWith('sb-')
+  )
+
   let supabaseResponse = NextResponse.next({
     request,
   })
+
+  if (!isProtectedRoute && !hasSupabaseCookie) {
+    return supabaseResponse
+  }
 
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
