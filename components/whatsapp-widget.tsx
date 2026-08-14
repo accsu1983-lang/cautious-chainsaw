@@ -9,12 +9,24 @@ export function WhatsAppWidget() {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
+    // ⚡ BOLT OPTIMIZATION: Throttle scroll listener using requestAnimationFrame and passive event option
+    // to prevent layout thrashing and main-thread jank during scrolling.
+    let rafId: number | null = null
+
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 300)
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          setIsVisible(window.scrollY > 300)
+          rafId = null
+        })
+      }
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+    }
   }, [])
 
   const phoneNumber = '27750119200' // WhatsApp format (no + or spaces)
