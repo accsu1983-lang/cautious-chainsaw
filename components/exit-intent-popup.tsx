@@ -17,14 +17,22 @@ export function ExitIntentPopup() {
   useEffect(() => {
     // Check if user has already seen popup in this session
     const hasSeenPopup = sessionStorage.getItem('exitPopupShown')
-    if (hasSeenPopup) return
+    if (hasSeenPopup || hasShown) return
 
+    let rafId: number | null = null
+
+    // ⚡ BOLT OPTIMIZATION: Throttle mouseleave handling with requestAnimationFrame
+    // to avoid main thread jank and immediately detach listener once triggered.
     const handleMouseLeave = (e: MouseEvent) => {
-      // Trigger when mouse leaves top of page (likely closing tab/window)
-      if (e.clientY <= 0 && !hasShown) {
-        setIsVisible(true)
-        setHasShown(true)
-        sessionStorage.setItem('exitPopupShown', 'true')
+      if (e.clientY <= 0) {
+        if (rafId !== null) return
+        rafId = requestAnimationFrame(() => {
+          rafId = null
+          setIsVisible(true)
+          setHasShown(true)
+          sessionStorage.setItem('exitPopupShown', 'true')
+          document.removeEventListener('mouseleave', handleMouseLeave)
+        })
       }
     }
 
@@ -35,6 +43,7 @@ export function ExitIntentPopup() {
 
     return () => {
       clearTimeout(timer)
+      if (rafId !== null) cancelAnimationFrame(rafId)
       document.removeEventListener('mouseleave', handleMouseLeave)
     }
   }, [hasShown])
