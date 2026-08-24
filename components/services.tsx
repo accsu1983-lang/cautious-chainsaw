@@ -1,3 +1,4 @@
+import React, { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
@@ -51,7 +52,8 @@ const industries = [
   { name: 'Retail', icon: Store, description: 'Shops & Showrooms' }
 ]
 
-export function Services() {
+/* ⚡ BOLT OPTIMIZATION: Memoize Services component with React.memo to prevent unnecessary re-renders when parent components update */
+export const Services = memo(function Services() {
   return (
     <section id="services" className="py-24 bg-background">
       <div className="container mx-auto px-4">
@@ -140,4 +142,4 @@ export function Services() {
       </div>
     </section>
   )
-}
+})
