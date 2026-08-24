@@ -1,0 +1,3 @@
+## 2025-03-16 - Bundle Size Optimization via Dynamic Imports
+**Learning:** In Next.js 16 with Turbopack, static imports of heavy Client Components in a Server Component (like `app/page.tsx`) significantly bloat the initial JavaScript payload. Moving them to dynamic imports with named exports (`.then(mod => mod.Component)`) effectively code-splits the application. Note that `ssr: false` in dynamic imports within a Server Component will cause build errors in this version of Next.js.
+**Action:** Use `next/dynamic` for all components rendered below the initial viewport to minimize the main bundle size.
