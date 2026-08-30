@@ -115,14 +115,28 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let rafId: number | null = null
+                    let latestX: number | null = null
 
+                    // ⚡ BOLT OPTIMIZATION: Throttled mousemove updates using requestAnimationFrame to limit state updates to screen refresh rate and prevent main-thread jank. Always uses latest event coordinates.
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      latestX = moveEvent.clientX
+                      if (rafId !== null) return
+                      rafId = requestAnimationFrame(() => {
+                        if (latestX !== null) {
+                          const x = latestX - rect.left
+                          const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                          setComparisonPosition(percentage)
+                        }
+                        rafId = null
+                      })
                     }
 
                     const handleUp = () => {
+                      if (rafId !== null) {
+                        cancelAnimationFrame(rafId)
+                        rafId = null
+                      }
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
                     }
@@ -135,15 +149,28 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let rafId: number | null = null
+                    let latestX: number | null = null
 
+                    // ⚡ BOLT OPTIMIZATION: Throttled touchmove updates using requestAnimationFrame to limit state updates to screen refresh rate and prevent main-thread jank. Always uses latest event coordinates.
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      latestX = moveEvent.touches[0].clientX
+                      if (rafId !== null) return
+                      rafId = requestAnimationFrame(() => {
+                        if (latestX !== null) {
+                          const x = latestX - rect.left
+                          const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                          setComparisonPosition(percentage)
+                        }
+                        rafId = null
+                      })
                     }
 
                     const handleUp = () => {
+                      if (rafId !== null) {
+                        cancelAnimationFrame(rafId)
+                        rafId = null
+                      }
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
                     }
