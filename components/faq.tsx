@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import {
   Accordion,
   AccordionContent,
@@ -40,7 +41,10 @@ const faqs = [
   }
 ]
 
-export function FAQ() {
+// ⚡ BOLT OPTIMIZATION: Memoized FAQ component using React.memo to prevent
+// unnecessary re-renders when parent components re-render. Since FAQ has no props
+// and contains multiple UI Accordion items, skipping redundant reconciliation saves CPU cycles.
+export const FAQ = memo(function FAQ() {
   return (
     <section id="faq" className="py-24 bg-background">
       <div className="container mx-auto px-4">
@@ -104,4 +108,4 @@ export function FAQ() {
       </div>
     </section>
   )
-}
+})
