@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
@@ -14,7 +15,13 @@ const areas = [
   'Linden', 'Auckland Park', 'Melville', 'Westdene', 'Sophiatown'
 ]
 
-export function Areas() {
+/**
+ * ⚡ BOLT OPTIMIZATION:
+ * Memoize the `Areas` component to prevent unnecessary re-renders when parent components
+ * (such as page wrappers or layout containers) update state. The `areas` list and layout
+ * are purely static, rendering 50+ DOM nodes and an embedded iframe, making memoization highly effective.
+ */
+export const Areas = memo(function Areas() {
   return (
     <section id="areas" className="py-24 bg-background">
       <div className="container mx-auto px-4">
@@ -89,4 +96,4 @@ export function Areas() {
       </div>
     </section>
   )
-}
+})
