@@ -6,6 +6,23 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  // ⚡ BOLT OPTIMIZATION: Early return for public routes when no Supabase auth cookie exists.
+  // Avoids instantiating Supabase client and making an unnecessary external network call
+  // (supabase.auth.getUser()) on every public page request, reducing TTFB significantly.
+  const pathname = request.nextUrl.pathname
+  const isProtectedRoute =
+    pathname.startsWith('/protected') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin')
+
+  const hasSupabaseCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith('sb-'))
+
+  if (!isProtectedRoute && !hasSupabaseCookie) {
+    return supabaseResponse
+  }
+
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
   const supabase = createServerClient(
