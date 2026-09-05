@@ -2,6 +2,22 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // ⚡ BOLT OPTIMIZATION: Bypasses Supabase client instantiation and network calls to
+  // `supabase.auth.getUser()` for unauthenticated visits on public routes.
+  const pathname = request.nextUrl.pathname
+  const isProtectedRoute =
+    pathname.startsWith('/protected') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin')
+
+  const hasSupabaseCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith('sb-'))
+
+  if (!isProtectedRoute && !hasSupabaseCookie) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -42,11 +58,11 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (
-    // if the user is not logged in and the app path, in this case, /protected, is accessed, redirect to the login page
-    request.nextUrl.pathname.startsWith('/protected') &&
+    // if the user is not logged in and a protected route is accessed, redirect to the login page
+    (request.nextUrl.pathname.startsWith('/protected') ||
+     request.nextUrl.pathname.startsWith('/admin')) &&
     !user
   ) {
-    // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
