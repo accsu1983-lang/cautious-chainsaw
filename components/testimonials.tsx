@@ -1,3 +1,4 @@
+import React, { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Star, Quote } from 'lucide-react'
 import Link from 'next/link'
@@ -53,7 +54,13 @@ const testimonials = [
   }
 ]
 
-export function Testimonials() {
+/**
+ * ⚡ BOLT OPTIMIZATION:
+ * Wrapped Testimonials in React.memo to prevent unnecessary re-renders when parent
+ * components re-render. The testimonials list is static data, so skipping re-renders
+ * saves reconciliation and DOM diffing of 6 cards and 30+ Star icon components.
+ */
+export const Testimonials = memo(function Testimonials() {
   return (
     <section id="testimonials" className="py-24 bg-background">
       <div className="container mx-auto px-4">
@@ -132,4 +139,4 @@ export function Testimonials() {
       </div>
     </section>
   )
-}
+})
