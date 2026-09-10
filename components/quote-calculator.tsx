@@ -1,8 +1,6 @@
 'use client'
 
-import React from "react"
-
-import { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,7 +30,8 @@ export function QuoteCalculator() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  const calculateEstimate = () => {
+  // ⚡ BOLT OPTIMIZATION: Memoize estimate calculation to prevent array lookups and object allocations on every form input keystroke
+  const estimate = useMemo(() => {
     if (!selectedService || !selectedQuantity) return null
 
     const service = serviceTypes.find(s => s.id === selectedService)
@@ -45,9 +44,7 @@ export function QuoteCalculator() {
     const maxEstimate = Math.ceil(baseEstimate * 1.1)
 
     return { min: minEstimate, max: maxEstimate }
-  }
-
-  const estimate = calculateEstimate()
+  }, [selectedService, selectedQuantity])
 
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault()
