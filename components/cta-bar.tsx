@@ -7,12 +7,25 @@ export function CTABar() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    // ⚡ BOLT OPTIMIZATION: Throttle scroll listener via requestAnimationFrame with passive option.
+    // Reduces main thread overhead on high-frequency scroll events.
+    let rAFId: number | null = null
+
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 400)
+      if (rAFId !== null) return
+      rAFId = requestAnimationFrame(() => {
+        setIsVisible(window.scrollY > 400)
+        rAFId = null
+      })
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rAFId !== null) {
+        cancelAnimationFrame(rAFId)
+      }
+    }
   }, [])
 
   if (!isVisible) return null
