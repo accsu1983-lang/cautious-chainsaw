@@ -1,10 +1,12 @@
+import { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Star, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 
-export function GoogleReviews() {
+// ⚡ BOLT OPTIMIZATION: Memoize GoogleReviews component to prevent redundant re-renders when parent state updates.
+export const GoogleReviews = memo(function GoogleReviews() {
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -137,4 +139,4 @@ export function GoogleReviews() {
       </div>
     </section>
   )
-}
+})
