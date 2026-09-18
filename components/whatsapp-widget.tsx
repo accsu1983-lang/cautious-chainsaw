@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -8,12 +8,22 @@ export function WhatsAppWidget() {
   const [isVisible, setIsVisible] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
+  // ⚡ BOLT OPTIMIZATION: Throttle scroll event listener using requestAnimationFrame and { passive: true }
+  // Reduces main-thread work and scrolling overhead.
   useEffect(() => {
+    let ticking = false
+
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 300)
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setIsVisible(window.scrollY > 300)
+          ticking = false
+        })
+        ticking = true
+      }
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
