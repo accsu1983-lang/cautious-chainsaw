@@ -1,17 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Phone, MessageCircle, Mail, X } from 'lucide-react'
 
 export function CTABar() {
   const [isVisible, setIsVisible] = useState(false)
 
+  // ⚡ BOLT OPTIMIZATION: Throttle scroll event listener using requestAnimationFrame and { passive: true }
+  // Reduces main-thread work and scrolling overhead.
   useEffect(() => {
+    let ticking = false
+
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 400)
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setIsVisible(window.scrollY > 400)
+          ticking = false
+        })
+        ticking = true
+      }
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
