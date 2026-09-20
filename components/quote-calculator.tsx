@@ -1,14 +1,13 @@
 'use client'
 
-import React from "react"
-
-import { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Calculator, Check, ArrowRight, Mail, Phone, User } from 'lucide-react'
 import Link from 'next/link'
+import { submitQuoteCalculator } from '@/lib/actions/forms'
 
 const serviceTypes = [
   { id: 'curtains', name: 'Curtains', basePrice: 150 },
@@ -32,7 +31,9 @@ export function QuoteCalculator() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  const calculateEstimate = () => {
+  // ⚡ BOLT OPTIMIZATION: Memoize estimate calculation to avoid re-evaluating
+  // array lookups and re-allocating result objects on every text input keystroke.
+  const estimate = useMemo(() => {
     if (!selectedService || !selectedQuantity) return null
 
     const service = serviceTypes.find(s => s.id === selectedService)
@@ -45,9 +46,7 @@ export function QuoteCalculator() {
     const maxEstimate = Math.ceil(baseEstimate * 1.1)
 
     return { min: minEstimate, max: maxEstimate }
-  }
-
-  const estimate = calculateEstimate()
+  }, [selectedService, selectedQuantity])
 
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,9 +55,6 @@ export function QuoteCalculator() {
     setIsSubmitting(true)
 
     try {
-      const { submitQuoteCalculator } = await import('@/lib/actions/forms')
-      const service = serviceTypes.find(s => s.id === selectedService)
-      
       const result = await submitQuoteCalculator({
         ...formData,
         serviceType: selectedService,
