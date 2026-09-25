@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,9 +38,26 @@ const beforeAfterProjects = [
   }
 ]
 
+// ⚡ BOLT OPTIMIZATION: Throttling high-frequency mousemove and touchmove slider drag events
+// with requestAnimationFrame to prevent layout thrashing and main-thread jank.
+// Storing cleanup functions in refs ensures event listeners are properly detached on unmount.
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+
+  const rafIdRef = useRef<number | null>(null)
+  const activeCleanupRef = useRef<(() => void) | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+      if (activeCleanupRef.current) {
+        activeCleanupRef.current()
+      }
+    }
+  }, [])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -114,19 +131,39 @@ export function BeforeAfterGallery() {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
                     
+                    if (activeCleanupRef.current) {
+                      activeCleanupRef.current()
+                    }
+
                     const rect = parentElement.getBoundingClientRect()
+                    let latestPercentage = comparisonPosition
+
+                    const updatePosition = () => {
+                      setComparisonPosition(latestPercentage)
+                      rafIdRef.current = null
+                    }
 
                     const handleMove = (moveEvent: MouseEvent) => {
                       const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      latestPercentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                      if (rafIdRef.current === null) {
+                        rafIdRef.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
+                      if (activeCleanupRef.current) {
+                        activeCleanupRef.current()
+                        activeCleanupRef.current = null
+                      }
+                    }
+
+                    const cleanup = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
                     }
 
+                    activeCleanupRef.current = cleanup
                     document.addEventListener('mousemove', handleMove)
                     document.addEventListener('mouseup', handleUp)
                   }}
@@ -134,21 +171,45 @@ export function BeforeAfterGallery() {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
                     
+                    if (activeCleanupRef.current) {
+                      activeCleanupRef.current()
+                    }
+
                     const rect = parentElement.getBoundingClientRect()
+                    let latestPercentage = comparisonPosition
+
+                    const updatePosition = () => {
+                      setComparisonPosition(latestPercentage)
+                      rafIdRef.current = null
+                    }
 
                     const handleMove = (moveEvent: TouchEvent) => {
+                      if (moveEvent.cancelable) {
+                        moveEvent.preventDefault()
+                      }
                       const touch = moveEvent.touches[0]
+                      if (!touch) return
                       const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      latestPercentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                      if (rafIdRef.current === null) {
+                        rafIdRef.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
+                      if (activeCleanupRef.current) {
+                        activeCleanupRef.current()
+                        activeCleanupRef.current = null
+                      }
+                    }
+
+                    const cleanup = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
                     }
 
-                    document.addEventListener('touchmove', handleMove)
+                    activeCleanupRef.current = cleanup
+                    document.addEventListener('touchmove', handleMove, { passive: false })
                     document.addEventListener('touchend', handleUp)
                   }}
                 >
