@@ -1,8 +1,6 @@
 'use client'
 
-import React from "react"
-
-import { useState } from 'react'
+import React, { useState, useMemo, memo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -24,7 +22,13 @@ const quantities = [
   { id: '10+', label: '10+ items', multiplier: 3.5 }
 ]
 
-export function QuoteCalculator() {
+/**
+ * ⚡ BOLT OPTIMIZATION:
+ * 1. Memoized `estimate` calculation with `useMemo` so array lookups and arithmetic
+ *    are skipped on form input state changes (`formData`).
+ * 2. Exported component wrapped with `React.memo` to avoid re-renders when parent renders.
+ */
+export const QuoteCalculator = memo(function QuoteCalculator() {
   const [selectedService, setSelectedService] = useState<string>('')
   const [selectedQuantity, setSelectedQuantity] = useState<string>('')
   const [showContactForm, setShowContactForm] = useState(false)
@@ -32,7 +36,7 @@ export function QuoteCalculator() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  const calculateEstimate = () => {
+  const estimate = useMemo(() => {
     if (!selectedService || !selectedQuantity) return null
 
     const service = serviceTypes.find(s => s.id === selectedService)
@@ -45,9 +49,7 @@ export function QuoteCalculator() {
     const maxEstimate = Math.ceil(baseEstimate * 1.1)
 
     return { min: minEstimate, max: maxEstimate }
-  }
-
-  const estimate = calculateEstimate()
+  }, [selectedService, selectedQuantity])
 
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault()
