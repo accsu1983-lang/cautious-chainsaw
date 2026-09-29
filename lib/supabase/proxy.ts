@@ -6,6 +6,24 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  const pathname = request.nextUrl.pathname
+
+  // Check if route requires auth or has active session cookies
+  const isProtectedRoute =
+    pathname.startsWith('/protected') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin')
+
+  const hasSupabaseCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith('sb-'))
+
+  // ⚡ BOLT OPTIMIZATION: Early return for public routes without Supabase cookies.
+  // Prevents unnecessary client instantiation and auth network requests on public routes.
+  if (!isProtectedRoute && !hasSupabaseCookie) {
+    return supabaseResponse
+  }
+
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
   const supabase = createServerClient(
@@ -41,12 +59,10 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    // if the user is not logged in and the app path, in this case, /protected, is accessed, redirect to the login page
-    request.nextUrl.pathname.startsWith('/protected') &&
-    !user
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  if (isProtectedRoute && !user) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
