@@ -7,17 +7,25 @@ import { Button } from '@/components/ui/button'
 export function BackToTop() {
   const [isVisible, setIsVisible] = useState(false)
 
+  // ⚡ BOLT OPTIMIZATION: Throttled scroll listener using requestAnimationFrame and passive event options
+  // to avoid main-thread blocking and layout thrashing during scroll interactions.
   useEffect(() => {
+    let rafId: number | null = null
+
     const toggleVisibility = () => {
-      if (window.scrollY > 500) {
-        setIsVisible(true)
-      } else {
-        setIsVisible(false)
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          setIsVisible(window.scrollY > 500)
+          rafId = null
+        })
       }
     }
 
-    window.addEventListener('scroll', toggleVisibility)
-    return () => window.removeEventListener('scroll', toggleVisibility)
+    window.addEventListener('scroll', toggleVisibility, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', toggleVisibility)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+    }
   }, [])
 
   const scrollToTop = () => {
