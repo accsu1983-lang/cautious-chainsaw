@@ -19,20 +19,22 @@ export async function GET(request: NextRequest) {
     // For now, we'll assume all authenticated users can access this
     // In production, verify the is_admin claim
 
-    // Get active subscribers count
-    const { count: activeCount, error: activeError } = await supabase
-      .from('newsletter_subscribers')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true)
+    // ⚡ BOLT OPTIMIZATION: Concurrently fetch active and total subscriber counts via Promise.all to avoid sequential database round trips.
+    const [activeResult, totalResult] = await Promise.all([
+      supabase
+        .from('newsletter_subscribers')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true),
+      supabase
+        .from('newsletter_subscribers')
+        .select('*', { count: 'exact', head: true }),
+    ])
 
-    if (activeError) throw activeError
+    if (activeResult.error) throw activeResult.error
+    if (totalResult.error) throw totalResult.error
 
-    // Get total subscribers count
-    const { count: totalCount, error: totalError } = await supabase
-      .from('newsletter_subscribers')
-      .select('*', { count: 'exact', head: true })
-
-    if (totalError) throw totalError
+    const activeCount = activeResult.count
+    const totalCount = totalResult.count
 
     return NextResponse.json({
       activeSubscribers: activeCount || 0,
