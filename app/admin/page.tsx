@@ -21,28 +21,32 @@ export default async function AdminDashboard() {
     redirect('/')
   }
 
-  // Fetch dashboard stats
-  const [customersResult, quotesResult, bookingsResult, newsletterResult] = await Promise.all([
+  // ⚡ BOLT OPTIMIZATION: Execute all 6 independent Supabase queries concurrently in a single Promise.all
+  // to avoid sequential network round trips and reduce server page rendering latency.
+  const [
+    customersResult,
+    quotesResult,
+    bookingsResult,
+    newsletterResult,
+    { data: recentBookings },
+    { data: pendingQuotes },
+  ] = await Promise.all([
     supabase.from('customers').select('*', { count: 'exact', head: true }),
     supabase.from('quotes').select('*', { count: 'exact', head: true }),
     supabase.from('bookings').select('*', { count: 'exact', head: true }),
-    supabase.from('newsletter_subscribers').select('*', { count: 'exact', head: true })
+    supabase.from('newsletter_subscribers').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('bookings')
+      .select('*, customers(full_name, email)')
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('quotes')
+      .select('*, customers(full_name, email)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(5),
   ])
-
-  // Fetch recent bookings
-  const { data: recentBookings } = await supabase
-    .from('bookings')
-    .select('*, customers(full_name, email)')
-    .order('created_at', { ascending: false })
-    .limit(5)
-
-  // Fetch pending quotes
-  const { data: pendingQuotes } = await supabase
-    .from('quotes')
-    .select('*, customers(full_name, email)')
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false })
-    .limit(5)
 
   const stats = [
     {
