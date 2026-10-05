@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,101 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+
+  // ⚡ BOLT OPTIMIZATION: Cache container bounds on drag start and throttle updates with requestAnimationFrame.
+  // Prevents layout thrashing (forced reflows) from calling getBoundingClientRect during high-frequency move events.
+  const animFrameIdRef = useRef<number | null>(null)
+  const isDraggingRef = useRef(false)
+  const latestXRef = useRef<number>(0)
+  const activeHandlersRef = useRef<{ move?: EventListener; up?: EventListener } | null>(null)
+
+  const stopDragging = useCallback(() => {
+    if (animFrameIdRef.current !== null) {
+      cancelAnimationFrame(animFrameIdRef.current)
+      animFrameIdRef.current = null
+    }
+    if (activeHandlersRef.current) {
+      if (activeHandlersRef.current.move) {
+        document.removeEventListener('mousemove', activeHandlersRef.current.move)
+        document.removeEventListener('touchmove', activeHandlersRef.current.move)
+      }
+      if (activeHandlersRef.current.up) {
+        document.removeEventListener('mouseup', activeHandlersRef.current.up)
+        document.removeEventListener('touchend', activeHandlersRef.current.up)
+      }
+      activeHandlersRef.current = null
+    }
+    isDraggingRef.current = false
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      stopDragging()
+    }
+  }, [stopDragging])
+
+  const schedulePositionUpdate = useCallback((clientX: number, rect: DOMRect) => {
+    latestXRef.current = clientX
+    if (animFrameIdRef.current !== null) return
+    animFrameIdRef.current = requestAnimationFrame(() => {
+      animFrameIdRef.current = null
+      const x = latestXRef.current - rect.left
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+      setComparisonPosition(percentage)
+    })
+  }, [])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const parentElement = e.currentTarget.parentElement
+    if (!parentElement) return
+
+    stopDragging()
+    const rect = parentElement.getBoundingClientRect()
+    isDraggingRef.current = true
+
+    const handleMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingRef.current) return
+      schedulePositionUpdate(moveEvent.clientX, rect)
+    }
+
+    const handleUp = () => {
+      stopDragging()
+    }
+
+    activeHandlersRef.current = {
+      move: handleMove as EventListener,
+      up: handleUp as EventListener,
+    }
+
+    document.addEventListener('mousemove', handleMove)
+    document.addEventListener('mouseup', handleUp)
+  }, [stopDragging, schedulePositionUpdate])
+
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const parentElement = e.currentTarget.parentElement
+    if (!parentElement) return
+
+    stopDragging()
+    const rect = parentElement.getBoundingClientRect()
+    isDraggingRef.current = true
+
+    const handleMove = (moveEvent: TouchEvent) => {
+      if (!isDraggingRef.current || !moveEvent.touches[0]) return
+      schedulePositionUpdate(moveEvent.touches[0].clientX, rect)
+    }
+
+    const handleUp = () => {
+      stopDragging()
+    }
+
+    activeHandlersRef.current = {
+      move: handleMove as EventListener,
+      up: handleUp as EventListener,
+    }
+
+    document.addEventListener('touchmove', handleMove)
+    document.addEventListener('touchend', handleUp)
+  }, [stopDragging, schedulePositionUpdate])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -110,47 +205,8 @@ export function BeforeAfterGallery() {
                 <div
                   className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
                   style={{ left: `${comparisonPosition}%` }}
-                  onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
-                    }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
-                  }}
-                  onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
-                  }}
+                  onMouseDown={handleMouseDown}
+                  onTouchStart={handleTouchStart}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                     <div className="flex gap-1">
