@@ -1,12 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+
+/**
+ * ⚡ BOLT OPTIMIZATION:
+ * Caches container bounding rect on drag start to prevent layout thrashing (forced reflow)
+ * during mousemove/touchmove events. Throttles comparison slider position updates using
+ * requestAnimationFrame for 60fps interaction performance and cancels pending animation frames on drag end.
+ */
 
 const beforeAfterProjects = [
   {
@@ -115,14 +122,26 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let animationFrameId: number | null = null
+                    let latestX = e.clientX
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      latestX = moveEvent.clientX
+                      if (animationFrameId !== null) return
+
+                      animationFrameId = requestAnimationFrame(() => {
+                        animationFrameId = null
+                        const x = latestX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                      })
                     }
 
                     const handleUp = () => {
+                      if (animationFrameId !== null) {
+                        cancelAnimationFrame(animationFrameId)
+                        animationFrameId = null
+                      }
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
                     }
@@ -135,15 +154,28 @@ export function BeforeAfterGallery() {
                     if (!parentElement) return
                     
                     const rect = parentElement.getBoundingClientRect()
+                    let animationFrameId: number | null = null
+                    let latestX = e.touches[0]?.clientX ?? 0
 
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      if (moveEvent.touches[0]) {
+                        latestX = moveEvent.touches[0].clientX
+                      }
+                      if (animationFrameId !== null) return
+
+                      animationFrameId = requestAnimationFrame(() => {
+                        animationFrameId = null
+                        const x = latestX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                      })
                     }
 
                     const handleUp = () => {
+                      if (animationFrameId !== null) {
+                        cancelAnimationFrame(animationFrameId)
+                        animationFrameId = null
+                      }
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
                     }
