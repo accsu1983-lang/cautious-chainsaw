@@ -1,8 +1,6 @@
 'use client'
 
-import React from "react"
-
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Gift, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +8,6 @@ import { Card, CardContent } from '@/components/ui/card'
 
 export function ExitIntentPopup() {
   const [isVisible, setIsVisible] = useState(false)
-  const [hasShown, setHasShown] = useState(false)
   const [email, setEmail] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -19,11 +16,13 @@ export function ExitIntentPopup() {
     const hasSeenPopup = sessionStorage.getItem('exitPopupShown')
     if (hasSeenPopup) return
 
+    // ⚡ BOLT OPTIMIZATION: Immediately detach event listener upon exit intent detection
+    // to avoid redundant event handling and unnecessary dependency re-subscribes.
     const handleMouseLeave = (e: MouseEvent) => {
       // Trigger when mouse leaves top of page (likely closing tab/window)
-      if (e.clientY <= 0 && !hasShown) {
+      if (e.clientY <= 0) {
+        document.removeEventListener('mouseleave', handleMouseLeave)
         setIsVisible(true)
-        setHasShown(true)
         sessionStorage.setItem('exitPopupShown', 'true')
       }
     }
@@ -37,7 +36,7 @@ export function ExitIntentPopup() {
       clearTimeout(timer)
       document.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [hasShown])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
