@@ -1,16 +1,19 @@
 'use client'
 
-import React from "react"
-
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Gift, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import { subscribeToNewsletter } from '@/lib/actions/forms'
+
+// ⚡ BOLT OPTIMIZATION:
+// 1. Static import of subscribeToNewsletter eliminates module dynamic import latency on user submit.
+// 2. Immediately detaches mouseleave listener upon trigger, avoiding redundant event handler execution.
+// 3. Removed unused hasShown state to avoid superfluous re-renders and simplified useEffect dependencies.
 
 export function ExitIntentPopup() {
   const [isVisible, setIsVisible] = useState(false)
-  const [hasShown, setHasShown] = useState(false)
   const [email, setEmail] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -21,9 +24,9 @@ export function ExitIntentPopup() {
 
     const handleMouseLeave = (e: MouseEvent) => {
       // Trigger when mouse leaves top of page (likely closing tab/window)
-      if (e.clientY <= 0 && !hasShown) {
+      if (e.clientY <= 0) {
+        document.removeEventListener('mouseleave', handleMouseLeave)
         setIsVisible(true)
-        setHasShown(true)
         sessionStorage.setItem('exitPopupShown', 'true')
       }
     }
@@ -37,14 +40,13 @@ export function ExitIntentPopup() {
       clearTimeout(timer)
       document.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [hasShown])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
 
     try {
-      const { subscribeToNewsletter } = await import('@/lib/actions/forms')
       const result = await subscribeToNewsletter(email)
       
       if (result.success) {
