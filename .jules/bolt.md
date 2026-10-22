@@ -1,0 +1,3 @@
+## 2025-02-18 - [Scroll Performance Optimization]
+**Learning:** High-frequency scroll event listeners run synchronously on the main thread and can cause frame-drops and layout thrashing. Throttling scroll events using `requestAnimationFrame` aligns paint tasks with the screen refresh cycle, preventing scroll stutter. Additionally, registering the event listener with `{ passive: true }` informs the browser that the scroll behavior cannot be canceled, optimizing scrolling performance significantly on mobile and desktop viewports.
+**Action:** Use `requestAnimationFrame` and passive event listener configurations for any global or high-frequency scroll and resize listeners in React components.
