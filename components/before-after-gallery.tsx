@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,22 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const lastXRef = useRef<number>(50)
+  const frameIdRef = useRef<number | null>(null)
+
+  const updatePosition = () => {
+    setComparisonPosition(lastXRef.current)
+    frameIdRef.current = null
+  }
+
+  useEffect(() => {
+    return () => {
+      if (frameIdRef.current !== null) {
+        cancelAnimationFrame(frameIdRef.current)
+      }
+    }
+  }, [])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -118,8 +134,11 @@ export function BeforeAfterGallery() {
 
                     const handleMove = (moveEvent: MouseEvent) => {
                       const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastXRef.current = Math.max(0, Math.min(100, (x / rect.width) * 100))
+
+                      if (frameIdRef.current === null) {
+                        frameIdRef.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
@@ -139,8 +158,11 @@ export function BeforeAfterGallery() {
                     const handleMove = (moveEvent: TouchEvent) => {
                       const touch = moveEvent.touches[0]
                       const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastXRef.current = Math.max(0, Math.min(100, (x / rect.width) * 100))
+
+                      if (frameIdRef.current === null) {
+                        frameIdRef.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
