@@ -1,19 +1,31 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Phone, MessageCircle, Mail, X } from 'lucide-react'
+import { throttle } from '@/lib/throttle'
 
 export function CTABar() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isDismissed, setIsDismissed] = useState(false)
+
+  // ⚡ BOLT OPTIMIZATION: Throttled scroll listener to 100ms.
+  // Using useMemo to maintain a stable reference to the throttled function across re-renders.
+  // Registering listener with { passive: true } to eliminate main-thread scroll blocking.
+  const throttledHandleScroll = useMemo(() => {
+    return throttle(() => {
+      if (!isDismissed) {
+        setIsVisible(window.scrollY > 400)
+      }
+    }, 100)
+  }, [isDismissed])
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsVisible(window.scrollY > 400)
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll)
+      throttledHandleScroll.cancel()
     }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [throttledHandleScroll])
 
   if (!isVisible) return null
 
@@ -55,7 +67,10 @@ export function CTABar() {
           </div>
 
           <button
-            onClick={() => setIsVisible(false)}
+            onClick={() => {
+              setIsVisible(false)
+              setIsDismissed(true)
+            }}
             className="absolute top-2 right-2 md:relative md:top-0 md:right-0 p-2 hover:bg-primary-foreground/10 rounded-lg transition-colors"
             aria-label="Close"
           >
