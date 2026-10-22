@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Mail, CheckCircle2, Send, Gift } from 'lucide-react'
+import { subscribeToNewsletter } from '@/lib/actions/forms'
 
 export function Newsletter() {
   const [email, setEmail] = useState('')
@@ -17,7 +18,7 @@ export function Newsletter() {
     setIsSubmitting(true)
 
     try {
-      const { subscribeToNewsletter } = await import('@/lib/actions/forms')
+      // ⚡ BOLT OPTIMIZATION: Replaced dynamic import with top-level import to eliminate runtime module resolution latency on form submission
       const result = await subscribeToNewsletter(email)
       
       if (result.success) {
