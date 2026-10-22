@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -42,6 +42,144 @@ export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
 
+  // ⚡ BOLT OPTIMIZATION: Performance-optimized interaction tracking
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const isDraggingRef = useRef(false)
+  const rafIdRef = useRef<number | null>(null)
+  const lastXRef = useRef<number | null>(null)
+  const containerRectRef = useRef<DOMRect | null>(null)
+
+  // ⚡ BOLT OPTIMIZATION: Interaction handlers saved in refs to ensure reliable cleanup
+  const mouseMoveHandlerRef = useRef<((e: MouseEvent) => void) | null>(null)
+  const mouseUpHandlerRef = useRef<(() => void) | null>(null)
+  const touchMoveHandlerRef = useRef<((e: TouchEvent) => void) | null>(null)
+  const touchEndHandlerRef = useRef<(() => void) | null>(null)
+
+  const cancelActiveFrame = () => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = null
+    }
+  }
+
+  const removeMouseListeners = () => {
+    if (mouseMoveHandlerRef.current) {
+      document.removeEventListener('mousemove', mouseMoveHandlerRef.current)
+      mouseMoveHandlerRef.current = null
+    }
+    if (mouseUpHandlerRef.current) {
+      document.removeEventListener('mouseup', mouseUpHandlerRef.current)
+      mouseUpHandlerRef.current = null
+    }
+  }
+
+  const removeTouchListeners = () => {
+    if (touchMoveHandlerRef.current) {
+      document.removeEventListener('touchmove', touchMoveHandlerRef.current)
+      touchMoveHandlerRef.current = null
+    }
+    if (touchEndHandlerRef.current) {
+      document.removeEventListener('touchend', touchEndHandlerRef.current)
+      touchEndHandlerRef.current = null
+    }
+  }
+
+  // ⚡ BOLT OPTIMIZATION: Explicitly remove all document-level event listeners on unmount to prevent leaks
+  useEffect(() => {
+    return () => {
+      cancelActiveFrame()
+      removeMouseListeners()
+      removeTouchListeners()
+    }
+  }, [])
+
+  // ⚡ BOLT OPTIMIZATION: Calculate handle position on requestAnimationFrame to avoid blocking the main thread
+  const updateSliderPosition = () => {
+    if (!isDraggingRef.current || lastXRef.current === null || !containerRectRef.current) {
+      rafIdRef.current = null
+      return
+    }
+
+    const rect = containerRectRef.current
+    const x = lastXRef.current - rect.left
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+    setComparisonPosition(percentage)
+
+    rafIdRef.current = null
+  }
+
+  const scheduleUpdate = (clientX: number) => {
+    lastXRef.current = clientX
+    if (rafIdRef.current === null) {
+      rafIdRef.current = requestAnimationFrame(updateSliderPosition)
+    }
+  }
+
+  const startDragMouse = (e: React.MouseEvent) => {
+    e.preventDefault()
+    const container = containerRef.current
+    if (!container) return
+
+    // ⚡ BOLT OPTIMIZATION: Cache bounding client rect on start to avoid layout thrashing (forced synchronous layout) during moves
+    containerRectRef.current = container.getBoundingClientRect()
+    isDraggingRef.current = true
+
+    // Remove any leftover listeners to avoid duplicates
+    removeMouseListeners()
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      scheduleUpdate(moveEvent.clientX)
+    }
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false
+      cancelActiveFrame()
+      removeMouseListeners()
+    }
+
+    mouseMoveHandlerRef.current = handleMouseMove
+    mouseUpHandlerRef.current = handleMouseUp
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  const startDragTouch = (e: React.TouchEvent) => {
+    const container = containerRef.current
+    if (!container) return
+
+    // ⚡ BOLT OPTIMIZATION: Cache bounding client rect on start to avoid layout thrashing
+    containerRectRef.current = container.getBoundingClientRect()
+    isDraggingRef.current = true
+
+    // Remove any leftover listeners to avoid duplicates
+    removeTouchListeners()
+
+    const handleTouchMove = (moveEvent: TouchEvent) => {
+      // ⚡ BOLT OPTIMIZATION: Only call preventDefault if event is cancelable to prevent browser intervention warnings
+      if (moveEvent.cancelable) {
+        moveEvent.preventDefault()
+      }
+      const touch = moveEvent.touches[0]
+      if (touch) {
+        scheduleUpdate(touch.clientX)
+      }
+    }
+
+    const handleTouchEnd = () => {
+      isDraggingRef.current = false
+      cancelActiveFrame()
+      removeTouchListeners()
+    }
+
+    touchMoveHandlerRef.current = handleTouchMove
+    touchEndHandlerRef.current = handleTouchEnd
+
+    // ⚡ BOLT OPTIMIZATION: passive: false is used so we can block scrolling while actively sliding
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', handleTouchEnd)
+  }
+
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
     setComparisonPosition(50)
@@ -76,7 +214,7 @@ export function BeforeAfterGallery() {
           <Card className="overflow-hidden border-2">
             <CardContent className="p-0">
               {/* Image Comparison Slider */}
-              <div className="relative h-[400px] md:h-[500px] bg-muted">
+              <div ref={containerRef} className="relative h-[400px] md:h-[500px] bg-muted">
                 {/* Before Image */}
                 <div className="absolute inset-0">
                   <Image
@@ -110,47 +248,8 @@ export function BeforeAfterGallery() {
                 <div
                   className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
                   style={{ left: `${comparisonPosition}%` }}
-                  onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
-                    }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
-                  }}
-                  onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
-                  }}
+                  onMouseDown={startDragMouse}
+                  onTouchStart={startDragTouch}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                     <div className="flex gap-1">
