@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,17 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const rafIdRef = useRef<number | null>(null)
+  const lastXRef = useRef<number>(0)
+  const containerRectRef = useRef<DOMRect | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+    }
+  }, [])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -114,17 +125,30 @@ export function BeforeAfterGallery() {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
                     
-                    const rect = parentElement.getBoundingClientRect()
+                    containerRectRef.current = parentElement.getBoundingClientRect()
+
+                    const updatePosition = () => {
+                      if (!containerRectRef.current) return
+                      const x = lastXRef.current - containerRectRef.current.left
+                      const percentage = Math.max(0, Math.min(100, (x / containerRectRef.current.width) * 100))
+                      setComparisonPosition(percentage)
+                      rafIdRef.current = null
+                    }
 
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastXRef.current = moveEvent.clientX
+                      if (rafIdRef.current === null) {
+                        rafIdRef.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
+                      if (rafIdRef.current !== null) {
+                        cancelAnimationFrame(rafIdRef.current)
+                        rafIdRef.current = null
+                      }
                     }
 
                     document.addEventListener('mousemove', handleMove)
@@ -134,18 +158,31 @@ export function BeforeAfterGallery() {
                     const parentElement = e.currentTarget.parentElement
                     if (!parentElement) return
                     
-                    const rect = parentElement.getBoundingClientRect()
+                    containerRectRef.current = parentElement.getBoundingClientRect()
+
+                    const updatePosition = () => {
+                      if (!containerRectRef.current) return
+                      const x = lastXRef.current - containerRectRef.current.left
+                      const percentage = Math.max(0, Math.min(100, (x / containerRectRef.current.width) * 100))
+                      setComparisonPosition(percentage)
+                      rafIdRef.current = null
+                    }
 
                     const handleMove = (moveEvent: TouchEvent) => {
                       const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      lastXRef.current = touch.clientX
+                      if (rafIdRef.current === null) {
+                        rafIdRef.current = requestAnimationFrame(updatePosition)
+                      }
                     }
 
                     const handleUp = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
+                      if (rafIdRef.current !== null) {
+                        cancelAnimationFrame(rafIdRef.current)
+                        rafIdRef.current = null
+                      }
                     }
 
                     document.addEventListener('touchmove', handleMove)
