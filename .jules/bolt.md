@@ -1,0 +1,3 @@
+## 2025-05-22 - Optimizing high-frequency event listeners
+**Learning:** Scroll event listeners in `CTABar`, `BackToTop`, and `WhatsAppWidget` were firing on every scroll pixel, causing unnecessary main thread work. Similarly, the `BeforeAfterGallery` interaction was using `getBoundingClientRect` inside move handlers, leading to forced synchronous layouts (layout thrashing).
+**Action:** Implemented a `throttle` utility for scroll listeners and used `requestAnimationFrame` for the gallery interaction. Cached the container's dimensions on drag start to prevent repeated layout calculations during movement.
