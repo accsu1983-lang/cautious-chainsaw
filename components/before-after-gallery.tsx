@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -42,6 +42,11 @@ export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
 
+  // ⚡ BOLT OPTIMIZATION: Cache container dimensions and throttle coordinates update to prevent layout thrashing and scroll-jank.
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const containerRectRef = useRef<DOMRect | null>(null)
+  const rafIdRef = useRef<number | null>(null)
+
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
     setComparisonPosition(50)
@@ -51,6 +56,77 @@ export function BeforeAfterGallery() {
     setActiveSlide((prev) => (prev - 1 + beforeAfterProjects.length) % beforeAfterProjects.length)
     setComparisonPosition(50)
   }
+
+  const handleDragMove = (clientX: number) => {
+    if (!containerRectRef.current) return
+
+    const rect = containerRectRef.current
+    const x = clientX - rect.left
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
+    }
+
+    rafIdRef.current = requestAnimationFrame(() => {
+      setComparisonPosition(percentage)
+    })
+  }
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!containerRef.current) return
+
+    // Cache the bounding rectangle of the container at the start of drag to avoid layout thrashing
+    containerRectRef.current = containerRef.current.getBoundingClientRect()
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      handleDragMove(moveEvent.clientX)
+    }
+
+    const onMouseUp = () => {
+      containerRectRef.current = null
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (!containerRef.current) return
+
+    // Cache the bounding rectangle of the container at the start of drag to avoid layout thrashing
+    containerRectRef.current = containerRef.current.getBoundingClientRect()
+
+    const onTouchMove = (moveEvent: TouchEvent) => {
+      if (moveEvent.cancelable) {
+        moveEvent.preventDefault()
+      }
+      if (moveEvent.touches && moveEvent.touches[0]) {
+        handleDragMove(moveEvent.touches[0].clientX)
+      }
+    }
+
+    const onTouchEnd = () => {
+      containerRectRef.current = null
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
+    }
+
+    // Attach to document to handle drag moving outside the slider container
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', onTouchEnd)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+    }
+  }, [])
 
   const currentProject = beforeAfterProjects[activeSlide]
 
@@ -76,14 +152,15 @@ export function BeforeAfterGallery() {
           <Card className="overflow-hidden border-2">
             <CardContent className="p-0">
               {/* Image Comparison Slider */}
-              <div className="relative h-[400px] md:h-[500px] bg-muted">
+              <div ref={containerRef} className="relative h-[400px] md:h-[500px] bg-muted overflow-hidden">
                 {/* Before Image */}
-                <div className="absolute inset-0">
+                <div className="absolute inset-0 select-none">
                   <Image
                     src={currentProject.beforeImage || "/placeholder.svg"}
                     alt={`Before ${currentProject.title}`}
                     fill
                     className="object-cover"
+                    priority={activeSlide === 0}
                   />
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                     BEFORE
@@ -92,7 +169,7 @@ export function BeforeAfterGallery() {
 
                 {/* After Image with Clip */}
                 <div
-                  className="absolute inset-0"
+                  className="absolute inset-0 select-none"
                   style={{ clipPath: `inset(0 0 0 ${comparisonPosition}%)` }}
                 >
                   <Image
@@ -100,6 +177,7 @@ export function BeforeAfterGallery() {
                     alt={`After ${currentProject.title}`}
                     fill
                     className="object-cover"
+                    priority={activeSlide === 0}
                   />
                   <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                     AFTER
@@ -108,49 +186,10 @@ export function BeforeAfterGallery() {
 
                 {/* Slider Handle */}
                 <div
-                  className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group"
+                  className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize group z-20"
                   style={{ left: `${comparisonPosition}%` }}
-                  onMouseDown={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('mousemove', handleMove)
-                      document.removeEventListener('mouseup', handleUp)
-                    }
-
-                    document.addEventListener('mousemove', handleMove)
-                    document.addEventListener('mouseup', handleUp)
-                  }}
-                  onTouchStart={(e) => {
-                    const parentElement = e.currentTarget.parentElement
-                    if (!parentElement) return
-                    
-                    const rect = parentElement.getBoundingClientRect()
-
-                    const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
-                    }
-
-                    const handleUp = () => {
-                      document.removeEventListener('touchmove', handleMove)
-                      document.removeEventListener('touchend', handleUp)
-                    }
-
-                    document.addEventListener('touchmove', handleMove)
-                    document.addEventListener('touchend', handleUp)
-                  }}
+                  onMouseDown={onMouseDown}
+                  onTouchStart={onTouchStart}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                     <div className="flex gap-1">
