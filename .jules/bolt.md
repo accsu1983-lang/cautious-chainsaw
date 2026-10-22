@@ -1,0 +1,3 @@
+## 2026-03-13 - Skipping Supabase Session Verification for Anonymous Visitors
+**Learning:** Calling `supabase.auth.getUser()` inside the Next.js middleware / proxy on every single request (including static pages and public assets) heavily impacts TTFB by introducing unnecessary API or cryptographic JWT validation overhead for anonymous visitors and search engines.
+**Action:** Inspect incoming cookies and target pathnames before instantiating the Supabase SSR client. If no Supabase auth cookies (starting with `sb-`) are present and the route does not require authentication (does not start with `/admin`, `/protected`, or `/api/admin`), immediately return the default response to bypass the auth roundtrip.
