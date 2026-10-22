@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,20 @@ const beforeAfterProjects = [
 export function BeforeAfterGallery() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [comparisonPosition, setComparisonPosition] = useState(50)
+  const activeCleanupRef = useRef<(() => void) | null>(null)
+  const rafIdRef = useRef<number | null>(null)
+
+  // ⚡ BOLT OPTIMIZATION: Clean up active drag event listeners and pending animation frames on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+      if (activeCleanupRef.current) {
+        activeCleanupRef.current()
+      }
+    }
+  }, [])
 
   const nextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % beforeAfterProjects.length)
@@ -116,17 +130,34 @@ export function BeforeAfterGallery() {
                     
                     const rect = parentElement.getBoundingClientRect()
 
+                    // ⚡ BOLT OPTIMIZATION: Throttle mouse pointer movement with rAF to eliminate layout thrashing
                     const handleMove = (moveEvent: MouseEvent) => {
-                      const x = moveEvent.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      if (rafIdRef.current !== null) {
+                        cancelAnimationFrame(rafIdRef.current)
+                      }
+                      rafIdRef.current = requestAnimationFrame(() => {
+                        const x = moveEvent.clientX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                      })
                     }
 
                     const handleUp = () => {
+                      if (rafIdRef.current !== null) {
+                        cancelAnimationFrame(rafIdRef.current)
+                        rafIdRef.current = null
+                      }
+                      document.removeEventListener('mousemove', handleMove)
+                      document.removeEventListener('mouseup', handleUp)
+                      activeCleanupRef.current = null
+                    }
+
+                    const cleanup = () => {
                       document.removeEventListener('mousemove', handleMove)
                       document.removeEventListener('mouseup', handleUp)
                     }
 
+                    activeCleanupRef.current = cleanup
                     document.addEventListener('mousemove', handleMove)
                     document.addEventListener('mouseup', handleUp)
                   }}
@@ -136,18 +167,35 @@ export function BeforeAfterGallery() {
                     
                     const rect = parentElement.getBoundingClientRect()
 
+                    // ⚡ BOLT OPTIMIZATION: Throttle touch pointer movement with rAF to eliminate layout thrashing
                     const handleMove = (moveEvent: TouchEvent) => {
-                      const touch = moveEvent.touches[0]
-                      const x = touch.clientX - rect.left
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-                      setComparisonPosition(percentage)
+                      if (rafIdRef.current !== null) {
+                        cancelAnimationFrame(rafIdRef.current)
+                      }
+                      rafIdRef.current = requestAnimationFrame(() => {
+                        const touch = moveEvent.touches[0]
+                        const x = touch.clientX - rect.left
+                        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                        setComparisonPosition(percentage)
+                      })
                     }
 
                     const handleUp = () => {
+                      if (rafIdRef.current !== null) {
+                        cancelAnimationFrame(rafIdRef.current)
+                        rafIdRef.current = null
+                      }
+                      document.removeEventListener('touchmove', handleMove)
+                      document.removeEventListener('touchend', handleUp)
+                      activeCleanupRef.current = null
+                    }
+
+                    const cleanup = () => {
                       document.removeEventListener('touchmove', handleMove)
                       document.removeEventListener('touchend', handleUp)
                     }
 
+                    activeCleanupRef.current = cleanup
                     document.addEventListener('touchmove', handleMove)
                     document.addEventListener('touchend', handleUp)
                   }}
