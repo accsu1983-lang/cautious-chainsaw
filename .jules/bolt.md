@@ -1,0 +1,3 @@
+## 2025-08-10 - Supabase Middleware Optimization for Anonymous Visitors
+**Learning:** Instantiating the Supabase client and calling `supabase.auth.getUser()` inside the Next.js middleware / proxy layer for every single request degrades the TTFB (Time to First Byte) of public pages. For anonymous visitors with no Supabase session (who do not possess any cookies starting with `sb-`), we can entirely skip client creation and user fetching.
+**Action:** In `lib/supabase/proxy.ts`, check if the requested route is not protected and if the request lacks any `sb-` cookies. If both conditions are met, return `NextResponse.next()` immediately to bypass the overhead.
