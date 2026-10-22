@@ -1,0 +1,3 @@
+## 2026-06-21 - Scroll Throttling and Interaction Optimization
+**Learning:** Throttling scroll-dependent visibility logic (e.g., 'Back to Top' buttons) to 100ms (10Hz) significantly reduces main-thread overhead by decreasing event handler execution frequency while maintaining sufficient responsiveness for UI state transitions. Additionally, caching container dimensions during interaction start and using `requestAnimationFrame` to decouple input events from state updates (in `BeforeAfterGallery`) prevents forced synchronous layouts (layout thrashing) and ensures smoother visual updates.
+**Action:** Apply a 100ms throttle to scroll listeners and use `requestAnimationFrame` with cached static dimensions for high-frequency interaction handlers.
