@@ -1,0 +1,3 @@
+## 2025-07-28 - [High-Frequency Scroll Throttling]
+**Learning:** Un-throttled high-frequency scroll event listeners on `window` (e.g., in `BackToTop`, `CTABar`, and `WhatsAppWidget`) execute state changes and style checks on every scroll tick. This blocks the main thread during fast scrolling. Throttling these listeners to 100ms and adding `{ passive: true }` improves scrolling smoothness dramatically by freeing up the main thread.
+**Action:** Always throttle high-frequency scroll listeners to 100ms using a clean `throttle` utility, preserve the reference with `useMemo`, specify `{ passive: true }`, and make sure to cancel pending timeouts on `useEffect` unmount.
