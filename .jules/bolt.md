@@ -1,0 +1,3 @@
+## 2026-11-02 - Supabase SSR Middleware Cookie Fast-Path
+**Learning:** Next.js middleware using `@supabase/ssr` invokes `supabase.auth.getUser()` across every route matched by the matcher. Calling `getUser()` unconditionally incurs unnecessary client instantiation and potential auth validation overhead for unauthenticated visitors on public pages. Checking if any Supabase authentication cookies (`sb-*`) exist in `request.cookies` provides a zero-overhead fast path that safely short-circuits client creation and network calls.
+**Action:** In `updateSession` middleware handlers, check for `request.cookies.getAll().some(c => c.name.startsWith('sb-'))` before creating the Supabase SSR client.
